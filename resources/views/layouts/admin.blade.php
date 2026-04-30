@@ -5,7 +5,6 @@
     class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
     dir="ltr"
     data-theme="theme-default"
-    data-assets-path="../../assets/"
     data-template="vertical-menu-template"
     data-style="light">
 <head>
@@ -48,8 +47,32 @@
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{asset('assets/vendor/css/pages/cards-statistics.css')}}" />
 
+    <link rel="stylesheet" href="{{asset('assets/vendor/libs/typeahead-js/typeahead.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/vendor/libs/select2/select2.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/vendor/libs/bootstrap-select/bootstrap-select.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/vendor/libs/typeahead-js/typeahead.css')}}" />
+
+
     <!-- Helpers -->
     <script src="{{asset('assets/vendor/js/helpers.js')}}"></script>
+
+    <script>
+        (function() {
+            var path = window.location.pathname;
+            // Считаем количество сегментов после /admin/
+            var match = path.match(/\/admin\/(.+)/);
+            var depth = match ? match[1].split('/').length : 0;
+            // Добавляем +1 уровень, чтобы выйти из /admin/
+            var assetsPath = '';
+            for (var i = 0; i <= depth; i++) {
+                assetsPath += '../';
+            }
+            assetsPath += 'assets/';
+            document.documentElement.setAttribute('data-assets-path', assetsPath);
+            console.log('Assets path set to:', assetsPath); // Для отладки
+        })();
+    </script>
+
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
     <script src="{{asset('assets/vendor/js/template-customizer.js')}}"></script>
@@ -154,18 +177,23 @@
                         <div>Города</div>
                     </a>
                     <ul class="menu-sub">
-                        <li class="menu-item active">
-                            <a href="app-ecommerce-dashboard.html" class="menu-link">
+                        <li class="menu-item">
+                            <a href="{{route('admin.countries.index')}}" class="menu-link">
+                                <div>Страны</div>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{route('admin.cities.index')}}" class="menu-link">
                                 <div>Города</div>
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a href="dashboards-crm.html" class="menu-link">
+                            <a href="{{route('admin.districts.index')}}" class="menu-link">
                                 <div>Районы</div>
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a href="index.html" class="menu-link">
+                            <a href="{{route('admin.localities.index')}}" class="menu-link">
                                 <div>Населенные пункты</div>
                             </a>
                         </li>
@@ -190,18 +218,6 @@
                     <a href="app-email.html" class="menu-link">
                         <i class="menu-icon tf-icons ri-government-line"></i>
                         <div>Управления</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="app-email.html" class="menu-link">
-                        <i class="menu-icon tf-icons ri-mail-open-line"></i>
-                        <div data-i18n="Email">Email</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="app-email.html" class="menu-link">
-                        <i class="menu-icon tf-icons ri-mail-open-line"></i>
-                        <div data-i18n="Email">Email</div>
                     </a>
                 </li>
                 <li class="menu-item">
@@ -266,5 +282,18 @@
 
 <!-- Page JS -->
 <script src="{{asset('assets/js/app-ecommerce-dashboard.js')}}"></script>
+
+<script src="{{asset('assets/vendor/libs/typeahead-js/typeahead.js')}}"></script>
+
+<!-- endbuild -->
+
+<!-- Vendors JS -->
+<script src="{{asset('assets/vendor/libs/select2/select2.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/bootstrap-select/bootstrap-select.js')}}"></script>
+<script src="{{asset('assets/vendor/libs/typeahead-js/typeahead.js')}}"></script>
+
+<!-- Page JS -->
+<script src="{{asset('assets/js/forms-selects.js')}}"></script>
+<script src="{{asset('assets/js/forms-typeahead.js')}}"></script>
 </body>
 </html>

@@ -13,36 +13,18 @@
             </div>
 
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                <!-- Search -->
+                <div class="navbar-nav align-items-center">
+                    <div class="nav-item navbar-search-wrapper mb-0">
+                        <a class="nav-item nav-link search-toggler fw-normal px-0" href="javascript:void(0);">
+                            <i class="ri-search-line ri-22px scaleX-n1-rtl me-3"></i>
+                            <span class="d-none d-md-inline-block text-muted">Search (Ctrl+/)</span>
+                        </a>
+                    </div>
+                </div>
+                <!-- /Search -->
 
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
-                    <!-- Style Switcher -->
-                    <li class="nav-item dropdown-style-switcher dropdown me-1 me-xl-0">
-                        <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow waves-effect waves-light"
-                           href="javascript:void(0);" data-bs-toggle="dropdown">
-                            <i class="ri-22px ri-sun-line"></i>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-styles">
-                            <li>
-                                <a class="dropdown-item waves-effect active" href="javascript:void(0);"
-                                   data-theme="light">
-                                    <span class="align-middle"><i class="ri-sun-line ri-22px me-3"></i>Light</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item waves-effect" href="javascript:void(0);" data-theme="dark">
-                                    <span class="align-middle"><i
-                                            class="ri-moon-clear-line ri-22px me-3"></i>Dark</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item waves-effect" href="javascript:void(0);" data-theme="system">
-                                    <span class="align-middle"><i
-                                            class="ri-computer-line ri-22px me-3"></i>System</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <!-- / Style Switcher-->
 
                     <!-- User -->
                     <li class="nav-item navbar-dropdown dropdown-user dropdown">
@@ -107,13 +89,11 @@
                             </li>
                             <li>
                                 <div class="d-grid px-4 pt-2 pb-1">
-                                    <form action="{{route('logout')}}">
-                                        <button class="btn btn-sm btn-danger d-flex waves-effect waves-light"
-                                           type="submit">
-                                            <small class="align-middle">Выйти</small>
-                                            <i class="ri-logout-box-r-line ms-2 ri-16px"></i>
-                                        </button>
-                                    </form>
+                                    <a class="btn btn-sm btn-danger d-flex waves-effect waves-light"
+                                       href="auth-login-cover.html" target="_blank">
+                                        <small class="align-middle">Logout</small>
+                                        <i class="ri-logout-box-r-line ms-2 ri-16px"></i>
+                                    </a>
                                 </div>
                             </li>
                         </ul>
@@ -138,7 +118,7 @@
                     <div class="card-datatable table-responsive pt-0">
                         <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                             <div class="card-header flex-column flex-md-row border-bottom">
-                                <div class="head-label text-center"><h5 class="card-title mb-0">Роли</h5></div>
+                                <div class="head-label text-center"><h5 class="card-title mb-0">Города</h5></div>
                                 <div class="dt-action-buttons text-end pt-3 pt-md-0">
                                     <div>
                                         <div class="btn-group">
@@ -149,9 +129,9 @@
                                                         class="ri-external-link-line me-sm-1"></i> <span
                                                         class="d-none d-sm-inline-block">Export</span></span></button>
                                         </div>
-                                        <a href="{{route('admin.roles.create')}}"
-                                            class="btn btn-secondary create-new btn-primary waves-effect waves-light"
-                                            tabindex="0" aria-controls="DataTables_Table_0"><span><i
+                                        <a href="{{route('admin.cities.create')}}"
+                                           class="btn btn-secondary create-new btn-primary waves-effect waves-light"
+                                           tabindex="0" aria-controls="DataTables_Table_0"><span><i
                                                     class="ri-add-line ri-16px me-sm-2"></i> <span
                                                     class="d-none d-sm-inline-block">Добавить</span></span>
                                         </a>
@@ -173,45 +153,39 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Заголовок</th>
-                                    <th>Пользователь</th>
-                                    <th>Создана</th>
+                                    <th>Страна</th>
+                                    <th>Создан</th>
                                     <th>Действие</th>
                                 </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0">
-                                    @foreach($roles as $role)
-                                        <tr>
-                                            <td>
-                                                <span class="fw-medium">{{$role->id}}</span>
-                                            </td>
-                                            <td>{{$role->name}}</td>
-                                            <td>
-
-                                            </td>
-                                            <td><span class="badge rounded-pill bg-label-primary me-1">{{$role->created_at}}</span></td>
-                                            <td>
-                                                <div class="dropdown">
-                                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                        <i class="ri-more-2-line"></i>
-                                                    </button>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item waves-effect" href="{{route('admin.roles.edit', $role->id)}}"><i class="ri-pencil-line me-1"></i>Изменить</a>
-                                                        <form action="{{route('admin.roles.delete', $role->id)}}" method="post">
-                                                            @csrf
-                                                            @method('DELETE')
-
-                                                            <button class="dropdown-item waves-effect" type="submit"><i class="ri-delete-bin-7-line me-1"></i>Удалить</button>
-
-                                                        </form>
-                                                    </div>
+                                @foreach($cities as $city)
+                                    <tr>
+                                        <td>
+                                            <span class="fw-medium">{{$city->id}}</span>
+                                        </td>
+                                        <td>{{$city->name}}</td>
+                                        <td>
+                                            {{$city->country->name}}
+                                        </td>
+                                        <td><span class="badge rounded-pill bg-label-primary me-1">{{$city->created_at}}</span></td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                    <i class="ri-more-2-line"></i>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item waves-effect" href="javascript:void(0);"><i class="ri-pencil-line me-1"></i> Edit</a>
+                                                    <a class="dropdown-item waves-effect" href="javascript:void(0);"><i class="ri-delete-bin-7-line me-1"></i> Delete</a>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach()
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
                                 </tbody>
                             </table>
                             <div class="mt-2">
-                                {{$roles->links()}}
+                                {{$cities->links()}}
                             </div>
                         </div>
                     </div>

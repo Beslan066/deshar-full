@@ -138,7 +138,7 @@
                     <div class="card-datatable table-responsive pt-0">
                         <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                             <div class="card-header flex-column flex-md-row border-bottom">
-                                <div class="head-label text-center"><h5 class="card-title mb-0">Роли</h5></div>
+                                <div class="head-label text-center"><h5 class="card-title mb-0">Страны</h5></div>
                                 <div class="dt-action-buttons text-end pt-3 pt-md-0">
                                     <div>
                                         <div class="btn-group">
@@ -149,7 +149,7 @@
                                                         class="ri-external-link-line me-sm-1"></i> <span
                                                         class="d-none d-sm-inline-block">Export</span></span></button>
                                         </div>
-                                        <a href="{{route('admin.roles.create')}}"
+                                        <a href="{{route('admin.countries.create')}}"
                                             class="btn btn-secondary create-new btn-primary waves-effect waves-light"
                                             tabindex="0" aria-controls="DataTables_Table_0"><span><i
                                                     class="ri-add-line ri-16px me-sm-2"></i> <span
@@ -179,29 +179,28 @@
                                 </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0">
-                                    @foreach($roles as $role)
+                                    @foreach($countries as $country)
                                         <tr>
                                             <td>
-                                                <span class="fw-medium">{{$role->id}}</span>
+                                                <span class="fw-medium">{{$country->id}}</span>
                                             </td>
-                                            <td>{{$role->name}}</td>
+                                            <td>{{$country->name}}</td>
                                             <td>
 
                                             </td>
-                                            <td><span class="badge rounded-pill bg-label-primary me-1">{{$role->created_at}}</span></td>
+                                            <td><span class="badge rounded-pill bg-label-primary me-1">{{$country->created_at}}</span></td>
                                             <td>
                                                 <div class="dropdown">
                                                     <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                                         <i class="ri-more-2-line"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item waves-effect" href="{{route('admin.roles.edit', $role->id)}}"><i class="ri-pencil-line me-1"></i>Изменить</a>
-                                                        <form action="{{route('admin.roles.delete', $role->id)}}" method="post">
+                                                        <a class="dropdown-item waves-effect" href="{{route('admin.countries.edit', $country->id)}}"><i class="ri-pencil-line me-1"></i>Изменить</a>
+                                                        <form action="{{route('admin.countries.delete', $country->id)}}" method="post">
                                                             @csrf
-                                                            @method('DELETE')
+                                                            @method('delete')
 
                                                             <button class="dropdown-item waves-effect" type="submit"><i class="ri-delete-bin-7-line me-1"></i>Удалить</button>
-
                                                         </form>
                                                     </div>
                                                 </div>
@@ -211,7 +210,7 @@
                                 </tbody>
                             </table>
                             <div class="mt-2">
-                                {{$roles->links()}}
+                                {{$countries->links()}}
                             </div>
                         </div>
                     </div>
@@ -219,7 +218,6 @@
 
             </div>
             <!-- / Content -->
-
         </div>
         <!-- Content wrapper -->
     </div>
