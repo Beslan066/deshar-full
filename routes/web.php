@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,19 @@ Route::middleware('auth')->group(function () {
 
 Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/', [\App\Http\Controllers\Admin\IndexController::class, 'index'])->name('admin.index');
+
+    // Роуты пользователей (отдельно, без namespace группы для UserController)
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+    // AJAX endpoints для динамических выпадающих списков
+    Route::get('/users/regions/{countryId}', [UserController::class, 'getRegions'])->name('admin.users.regions');
+    Route::get('/users/districts/{regionId}', [UserController::class, 'getDistricts'])->name('admin.users.districts');
+    Route::get('/users/cities/{districtId}', [UserController::class, 'getCities'])->name('admin.users.cities');
 
     Route::group(['namespace' => 'Roles', 'prefix' => 'roles'], function () {
         Route::get('/', [\App\Http\Controllers\Admin\Roles\IndexController::class, 'index'])->name('admin.roles.index');
@@ -44,7 +58,7 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth
         Route::post('/store', [\App\Http\Controllers\Admin\Cities\IndexController::class, 'store'])->name('admin.cities.store');
         Route::get('/{city}/edit', [\App\Http\Controllers\Admin\Cities\IndexController::class, 'edit'])->name('admin.cities.edit');
         Route::patch('/{city}', [\App\Http\Controllers\Admin\Cities\IndexController::class, 'update'])->name('admin.cities.update');
-        Route::delete('/{ciry}', [\App\Http\Controllers\Admin\Cities\IndexController::class, 'destroy'])->name('admin.cities.delete');
+        Route::delete('/{city}', [\App\Http\Controllers\Admin\Cities\IndexController::class, 'destroy'])->name('admin.cities.delete');
     });
 
     Route::group(['namespace' => 'Districts', 'prefix' => 'districts'], function () {
@@ -63,6 +77,24 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth
         Route::get('/{locality}/edit', [\App\Http\Controllers\Admin\Localities\IndexController::class, 'edit'])->name('admin.localities.edit');
         Route::patch('/{locality}', [\App\Http\Controllers\Admin\Localities\IndexController::class, 'update'])->name('admin.localities.update');
         Route::delete('/{locality}', [\App\Http\Controllers\Admin\Localities\IndexController::class, 'destroy'])->name('admin.localities.delete');
+    });
+
+    Route::group(['namespace' => 'Schools', 'prefix' => 'schools'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Schools\IndexController::class, 'index'])->name('admin.schools.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\Schools\IndexController::class, 'create'])->name('admin.schools.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\Schools\IndexController::class, 'store'])->name('admin.schools.store');
+        Route::get('/{school}/edit', [\App\Http\Controllers\Admin\Schools\IndexController::class, 'edit'])->name('admin.schools.edit');
+        Route::patch('/{school}', [\App\Http\Controllers\Admin\Schools\IndexController::class, 'update'])->name('admin.schools.update');
+        Route::delete('/{school}', [\App\Http\Controllers\Admin\Schools\IndexController::class, 'destroy'])->name('admin.schools.delete');
+    });
+
+    Route::group(['namespace' => 'SchoolClasses', 'prefix' => 'school-classes'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'index'])->name('admin.schoolClasses.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'create'])->name('admin.schoolClasses.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'store'])->name('admin.schoolClasses.store');
+        Route::get('/{schoolClass}/edit', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'edit'])->name('admin.schoolClasses.edit');
+        Route::patch('/{schoolClass}', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'update'])->name('admin.schoolClasses.update');
+        Route::delete('/{schoolClass}', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'destroy'])->name('admin.schoolClasses.delete');
     });
 });
 
