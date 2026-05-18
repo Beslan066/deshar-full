@@ -10,8 +10,8 @@
 
             <!-- Multi Column with Form Separator -->
             <div class="card mb-6">
-                <h5 class="card-header">Список классов - создание</h5>
-                <form class="card-body" action="{{route('admin.schoolClasses.store')}}" method="post"
+                <h5 class="card-header">Список образовательных модулей - создание</h5>
+                <form class="card-body" action="{{route('admin.educationModules.store')}}" method="post"
                       enctype="multipart/form-data">
                     @csrf
                     @method('post')
@@ -26,34 +26,19 @@
                         <div class="col-md-6 mb-6 mt-4">
                             <div class="form-floating form-floating-outline">
                                 <select id="selectpickerBasic" class="selectpicker w-100"
-                                        data-style="btn-default" name="school_id">
-                                    @foreach($schools as $school)
-                                        <option value="{{$school->id}}">{{$school->name}}</option>
-                                    @endforeach
-                                </select>
-                                <label for="selectpickerBasic">Школа</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-6 mt-4">
-                            <div class="form-floating form-floating-outline">
-                                <select id="selectpickerBasic" class="selectpicker w-100"
                                         data-style="btn-default" name="school_class_type_id">
-                                    @foreach($schoolClassTypes as $classType)
-                                        <option value="{{$classType->id}}">{{$classType->name}}</option>
+                                    @foreach($schoolClassTypes as $class)
+                                        <option value="{{$class->id}}">{{$class->name}}</option>
                                     @endforeach
                                 </select>
-                                <label for="selectpickerBasic">Программа</label>
+                                <label for="selectpickerBasic">Для какого класса</label>
                             </div>
                         </div>
+
                         <div class="col-md-6 mb-6 mt-4">
                             <div class="form-floating form-floating-outline">
-                                <select id="selectpickerBasic" class="selectpicker w-100"
-                                        data-style="btn-default" name="teacher_id">
-                                    @foreach($teachers as $teacher)
-                                        <option value="{{$teacher->id}}">{{$teacher->name}}</option>
-                                    @endforeach
-                                </select>
-                                <label for="selectpickerBasic">Учитель</label>
+                                <input type="text" id="formtabs-first-name" class="form-control" placeholder="Легко, сложно и т.п" name="complexity">
+                                <label for="selectpickerBasic">Сложность</label>
                             </div>
                         </div>
 

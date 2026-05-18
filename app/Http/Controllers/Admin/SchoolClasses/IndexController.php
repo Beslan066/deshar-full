@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\SchoolClasses\StoreRequest;
 use App\Http\Requests\Admin\SchoolClasses\UpdateRequest;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\SchoolClassType;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -16,17 +17,22 @@ class IndexController extends Controller
     {
         $schoolClasses = SchoolClass::paginate(10);
 
-        return view('admin.school-class.index', ['classes' => $schoolClasses]);
+        return view('admin.school-class.index', [
+            'classes' => $schoolClasses,
+        ]);
     }
 
     public function create() {
 
         $schools = School::paginate(10);
+        $schoolClassTypes = SchoolClassType::all();
+
         $teachers = User::query()->where('role_id', '8')->paginate(10);
 
         return view('admin.school-class.create', [
             'schools' => $schools,
             'teachers' => $teachers,
+            'schoolClassTypes' => $schoolClassTypes,
         ]);
     }
 

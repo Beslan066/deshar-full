@@ -96,6 +96,15 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth
         Route::patch('/{schoolClass}', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'update'])->name('admin.schoolClasses.update');
         Route::delete('/{schoolClass}', [\App\Http\Controllers\Admin\SchoolClasses\IndexController::class, 'destroy'])->name('admin.schoolClasses.delete');
     });
+
+    Route::group(['namespace' => 'EducationModules', 'prefix' => 'education-modules'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'index'])->name('admin.educationModules.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'create'])->name('admin.educationModules.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'store'])->name('admin.educationModules.store');
+        Route::get('/{educationModule}/edit', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'edit'])->name('admin.educationModules.edit');
+        Route::patch('/{educationModule}', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'update'])->name('admin.educationModules.update');
+        Route::delete('/{educationModule}', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'destroy'])->name('admin.educationModules.delete');
+    });
 });
 
 require __DIR__.'/auth.php';

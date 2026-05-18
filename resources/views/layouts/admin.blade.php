@@ -158,7 +158,7 @@
                 <!-- Dashboards -->
 
                 <li class="menu-item">
-                    <a href="" class="menu-link">
+                    <a href="{{route('admin.educationModules.index')}}" class="menu-link">
                         <i class="menu-icon tf-icons ri-puzzle-line"></i>
                         <div>Модули</div>
                     </a>

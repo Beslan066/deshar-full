@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Admin\SchoolClasses;
+namespace App\Http\Requests\Admin\EducationModulePieces;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,18 +24,15 @@ class UpdateRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'teacher_id' => 'required|exists:users,id',
-            'school_id' => 'required|exists:schools,id',
-            'school_class_type_id' => 'required|exists:schools,id',
+            'education_module_id' => 'required',
+            'fon' => 'nullable|string',
         ];
     }
 
     public function messages(): array {
         return [
             'name.required' => 'Название обязательно для заполения',
-            'teacher_id.required' => 'Необходимо выбрать учителя для класса',
-            'school_id.required' => 'Необходимо выбрать школу для класса',
-            'school_class_type_id.required' => 'Необходимо выбрать программу',
+            'education_module_id.required' => 'Необходимо выбрать модуль',
         ];
     }
 }

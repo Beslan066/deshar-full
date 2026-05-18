@@ -10,7 +10,7 @@
                 <div class="card-datatable table-responsive pt-0">
                     <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                         <div class="card-header flex-column flex-md-row border-bottom">
-                            <div class="head-label text-center"><h5 class="card-title mb-0">Список школ</h5></div>
+                            <div class="head-label text-center"><h5 class="card-title mb-0">Список образовательных модулей</h5></div>
                             <div class="dt-action-buttons text-end pt-3 pt-md-0">
                                 <div>
                                     <div>
@@ -25,7 +25,7 @@
                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                             Фильтр
                                         </button>
-                                        <a href="{{route('admin.schoolClasses.create')}}"
+                                        <a href="{{route('admin.educationModules.create')}}"
                                            class="btn btn-secondary create-new btn-primary waves-effect waves-light"
                                            tabindex="0" aria-controls="DataTables_Table_0"><span><i
                                                     class="ri-add-line ri-16px me-sm-2"></i> <span
@@ -56,28 +56,23 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Заголовок</th>
-                                <th>Район</th>
-                                <th>Школа</th>
+                                <th>Программа для</th>
                                 <th>Создан</th>
                                 <th>Действие</th>
                             </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
-                            @foreach($classes as $class)
+                            @foreach($modules as $module)
                                 <tr>
                                     <td>
-                                        <span class="fw-medium">{{$class->id}}</span>
+                                        <span class="fw-medium">{{$module->id}}</span>
                                     </td>
-                                    <td>{{$class->name}}</td>
+                                    <td>{{$module->name}}</td>
                                     <td>
-                                        {{$class->school->district->name}}
+                                        {{$module->schoolClassType->name}}
                                     </td>
-                                    <td>
-                                        {{$class->school->name}}
-                                    </td>
-
                                     <td><span
-                                            class="badge rounded-pill bg-label-primary me-1">{{$class->created_at}}</span>
+                                            class="badge rounded-pill bg-label-primary me-1">{{$module->created_at}}</span>
                                     </td>
                                     <td>
                                         <div class="dropdown">
@@ -98,7 +93,7 @@
                             </tbody>
                         </table>
                         <div class="mt-2">
-                            {{$classes->links()}}
+                            {{$modules->links()}}
                         </div>
                     </div>
                 </div>

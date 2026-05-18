@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SchoolClass extends Model
 {
@@ -12,7 +13,15 @@ class SchoolClass extends Model
         'name',
         'school_id',
         'teacher_id',
-        'fon',
-        'complexity',
+        'school_class_type_id',
     ];
+
+    public function school() {
+        return $this->belongsTo(School::class);
+    }
+
+    public function teacher() {
+
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
 }
