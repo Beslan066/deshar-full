@@ -81,7 +81,7 @@
                             </tbody>
                         </table>
                         <div class="mt-2">
-                            {{$districts->links()}}
+                            {{$districts->links('vendor.pagination.tailwind')}}
                         </div>
                     </div>
                 </div>

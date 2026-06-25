@@ -163,7 +163,7 @@
                             </tbody>
                         </table>
                         <div class="mt-3 px-3">
-                            {{ $users->appends(request()->query())->links() }}
+                            {{ $users->appends(request()->query())->links('vendor.pagination.tailwind') }}
                         </div>
                     </div>
                 </div>

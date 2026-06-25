@@ -1,5 +1,6 @@
 <?php
 
+
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,7 @@ Route::middleware('auth')->group(function () {
 Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/', [\App\Http\Controllers\Admin\IndexController::class, 'index'])->name('admin.index');
 
-    // Роуты пользователей (отдельно, без namespace группы для UserController)
+    // Роуты пользователей
     Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
     Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
@@ -101,10 +102,52 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth
         Route::get('/', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'index'])->name('admin.educationModules.index');
         Route::get('/create', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'create'])->name('admin.educationModules.create');
         Route::post('/store', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'store'])->name('admin.educationModules.store');
-        Route::get('/{educationModule}/edit', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'edit'])->name('admin.educationModules.edit');
-        Route::patch('/{educationModule}', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'update'])->name('admin.educationModules.update');
-        Route::delete('/{educationModule}', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'destroy'])->name('admin.educationModules.delete');
+        Route::get('/{schoolClass}/edit', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'edit'])->name('admin.educationModules.edit');
+        Route::patch('/{schoolClass}', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'update'])->name('admin.educationModules.update');
+        Route::delete('/{schoolClass}', [\App\Http\Controllers\Admin\EducationModules\IndexController::class, 'destroy'])->name('admin.educationModules.delete');
     });
+
+    Route::group(['namespace' => 'EducationModulesPieces', 'prefix' => 'education-modules-pieces'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\EducationModulePieces\IndexController::class, 'index'])->name('admin.educationModulesPieces.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\EducationModulePieces\IndexController::class, 'create'])->name('admin.educationModulesPieces.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\EducationModulePieces\IndexController::class, 'store'])->name('admin.educationModulesPieces.store');
+        Route::get('/{educationModulePiece}/edit', [\App\Http\Controllers\Admin\EducationModulePieces\IndexController::class, 'edit'])->name('admin.educationModulesPieces.edit');
+        Route::patch('/{educationModulePiece}', [\App\Http\Controllers\Admin\EducationModulePieces\IndexController::class, 'update'])->name('admin.educationModulesPieces.update');
+        Route::delete('/{educationModulePiece}', [\App\Http\Controllers\Admin\EducationModulePieces\IndexController::class, 'destroy'])->name('admin.educationModulesPieces.delete');
+    });
+
+    Route::group(['namespace' => 'Lessons', 'prefix' => 'lessons'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Lessons\IndexController::class, 'index'])->name('admin.lessons.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\Lessons\IndexController::class, 'create'])->name('admin.lessons.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\Lessons\IndexController::class, 'store'])->name('admin.lessons.store');
+        Route::get('/{lesson}/edit', [\App\Http\Controllers\Admin\Lessons\IndexController::class, 'edit'])->name('admin.lessons.edit');
+        Route::patch('/{lesson}', [\App\Http\Controllers\Admin\Lessons\IndexController::class, 'update'])->name('admin.lessons.update');
+        Route::delete('/{lesson}', [\App\Http\Controllers\Admin\Lessons\IndexController::class, 'destroy'])->name('admin.lessons.delete');
+    });
+
+    Route::group(['namespace' => 'Tasks', 'prefix' => 'tasks'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'index'])->name('admin.tasks.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'create'])->name('admin.tasks.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'store'])->name('admin.tasks.store');
+        Route::get('/{task}/edit', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'edit'])->name('admin.tasks.edit');
+        Route::patch('/{task}', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'update'])->name('admin.tasks.update');
+        Route::delete('/{task}', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'destroy'])->name('admin.tasks.delete');
+    });
+
+    // AJAX для получения дефолтного конфига
+    Route::get('tasks/default-config', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'getDefaultConfig'])
+        ->name('admin.tasks.defaultConfig');
+
+
+    Route::group(['namespace' => 'TaskTypes', 'prefix' => 'task-types'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TaskTypes\IndexController::class, 'index'])->name('admin.taskTypes.index');
+        Route::get('/create', [\App\Http\Controllers\Admin\TaskTypes\IndexController::class, 'create'])->name('admin.taskTypes.create');
+        Route::post('/store', [\App\Http\Controllers\Admin\TaskTypes\IndexController::class, 'store'])->name('admin.taskTypes.store');
+        Route::get('/{taskType}/edit', [\App\Http\Controllers\Admin\TaskTypes\IndexController::class, 'edit'])->name('admin.taskTypes.edit');
+        Route::patch('/{taskType}', [\App\Http\Controllers\Admin\TaskTypes\IndexController::class, 'update'])->name('admin.taskTypes.update');
+        Route::delete('/{taskType}', [\App\Http\Controllers\Admin\TaskTypes\IndexController::class, 'destroy'])->name('admin.taskTypes.delete');
+    });
+
 });
 
 require __DIR__.'/auth.php';

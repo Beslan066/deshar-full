@@ -56,6 +56,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Заголовок</th>
+                                <th>Населенный пункт</th>
                                 <th>Район</th>
                                 <th>Создан</th>
                                 <th>Действие</th>
@@ -68,9 +69,17 @@
                                         <span class="fw-medium">{{$school->id}}</span>
                                     </td>
                                     <td>{{$school->name}}</td>
-                                    <td>
-                                        {{$school->district->name}}
-                                    </td>
+                                    @if(isset($school->locality->name))
+                                        <td>
+                                            {{$school->locality->name}}
+                                        </td>
+                                    @endif
+
+                                    @if(isset($school->locality->district))
+                                        <td>
+                                            {{$school->locality->district->name}}
+                                        </td>
+                                    @endif
 
                                     <td><span
                                             class="badge rounded-pill bg-label-primary me-1">{{$school->created_at}}</span>

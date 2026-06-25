@@ -165,10 +165,44 @@
                 </li>
 
                 <li class="menu-item">
-                    <a href="" class="menu-link">
-                        <i class="menu-icon tf-icons ri-task-line"></i>
+                    <a href="{{route('admin.educationModulesPieces.index')}}" class="menu-link">
+                        <i class="menu-icon tf-icons ri-puzzle-line"></i>
+                        <div>Разделы</div>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{{route('admin.lessons.index')}}" class="menu-link">
+                        <i class="menu-icon tf-icons ri-game-line"></i>
                         <div>Уроки</div>
                     </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{{route('admin.tasks.index')}}" class="menu-link">
+                        <i class="menu-icon tf-icons ri-task-line"></i>
+                        <div>Задания</div>
+                    </a>
+                </li>
+
+                <!-- Добавить в меню админки -->
+                <li class="menu-item @if(request()->routeIs('admin.taskTypes.*')) open @endif">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ri-price-tag-2-line"></i>
+                        <div data-i18n="Task Types">Типы заданий</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item @if(request()->routeIs('admin.taskTypes.index')) active @endif">
+                            <a href="{{ route('admin.taskTypes.index') }}" class="menu-link">
+                                <div data-i18n="List">Список</div>
+                            </a>
+                        </li>
+                        <li class="menu-item @if(request()->routeIs('admin.taskTypes.create')) active @endif">
+                            <a href="{{ route('admin.taskTypes.create') }}" class="menu-link">
+                                <div data-i18n="Create">Создать</div>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li class="menu-item">

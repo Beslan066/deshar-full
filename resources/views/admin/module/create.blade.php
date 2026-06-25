@@ -1,62 +1,117 @@
 @extends('layouts.admin')
 
 @section('content')
-    <!-- Content wrapper -->
     <div class="content-wrapper">
-        <!-- Content -->
-
         <div class="container-xxl flex-grow-1 container-p-y">
-            <!-- Basic Layout -->
+            <div class="card">
+                <h5 class="card-header">Создание образовательного модуля</h5>
 
-            <!-- Multi Column with Form Separator -->
-            <div class="card mb-6">
-                <h5 class="card-header">Список образовательных модулей - создание</h5>
-                <form class="card-body" action="{{route('admin.educationModules.store')}}" method="post"
-                      enctype="multipart/form-data">
-                    @csrf
-                    @method('post')
-                    <div class="row g-6">
-
-                        <div class="col-md-6 mb-6 mt-4">
-                            <div class="form-floating form-floating-outline">
-                                <input type="text" id="formtabs-first-name" class="form-control" placeholder="СОШ №1" name="name">
-                                <label for="selectpickerBasic">Название</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-6 mt-4">
-                            <div class="form-floating form-floating-outline">
-                                <select id="selectpickerBasic" class="selectpicker w-100"
-                                        data-style="btn-default" name="school_class_type_id">
-                                    @foreach($schoolClassTypes as $class)
-                                        <option value="{{$class->id}}">{{$class->name}}</option>
-                                    @endforeach
-                                </select>
-                                <label for="selectpickerBasic">Для какого класса</label>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-6 mt-4">
-                            <div class="form-floating form-floating-outline">
-                                <input type="text" id="formtabs-first-name" class="form-control" placeholder="Легко, сложно и т.п" name="complexity">
-                                <label for="selectpickerBasic">Сложность</label>
-                            </div>
-                        </div>
-
-                        <div class="">
-                            <button type="reset" class="btn btn-outline-secondary waves-effect">Отмена</button>
-                            <button type="submit" class="btn btn-primary me-4 waves-effect waves-light">Создать
-                            </button>
+                {{-- БЛОК ОБЩИХ ОШИБОК --}}
+                @if($errors->any())
+                    <div class="card-body">
+                        <div class="alert alert-danger alert-dismissible" role="alert">
+                            <h6 class="alert-heading mb-1">Пожалуйста, исправьте следующие ошибки:</h6>
+                            <ul class="mb-0">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     </div>
+                @endif
 
+                <form class="card-body" action="{{ route('admin.educationModules.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="row g-6">
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="text" id="name" class="form-control @error('name') is-invalid @enderror"
+                                       placeholder="Например: Ингушский язык" name="name" value="{{ old('name') }}" required>
+                                <label for="name">Название модуля <span class="text-danger">*</span></label>
+                                @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline mb-4">
+                                <select id="school_class_type_id" class="form-select @error('school_class_type_id') is-invalid @enderror" name="school_class_type_id" required>
+                                    <option value="">Выберите класс</option>
+                                    @foreach($schoolClassTypes as $class)
+                                        <option value="{{ $class->id }}" {{ old('school_class_type_id') == $class->id ? 'selected' : '' }}>
+                                            {{ $class->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <label for="school_class_type_id">Для какого класса <span class="text-danger">*</span></label>
+                                @error('school_class_type_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="number" id="complexity" class="form-control @error('complexity') is-invalid @enderror"
+                                       placeholder="1-5" name="complexity" value="{{ old('complexity', 1) }}" min="1" max="5">
+                                <label for="complexity">Сложность (1-5)</label>
+                                @error('complexity')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="number" id="sort_order" class="form-control @error('sort_order') is-invalid @enderror"
+                                       placeholder="0" name="sort_order" value="{{ old('sort_order', 0) }}">
+                                <label for="sort_order">Порядок сортировки</label>
+                                @error('sort_order')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-floating form-floating-outline mb-4">
+                            <textarea id="description" class="form-control @error('description') is-invalid @enderror"
+                                      placeholder="Описание модуля" name="description" rows="3">{{ old('description') }}</textarea>
+                                <label for="description">Описание</label>
+                                @error('description')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="image" class="form-label">Обложка модуля</label>
+                                <input type="file" id="image" class="form-control @error('image') is-invalid @enderror" name="image" accept="image/*">
+                                @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">Максимальный размер: 2MB. Форматы: jpg, jpeg, png, gif</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-4 mt-2">
+                                <input class="form-check-input" type="checkbox" id="is_published" name="is_published" value="1" {{ old('is_published') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_published">Опубликовать сразу</label>
+                            </div>
+                            <small class="text-muted text-warning">⚠️ Если не поставить галочку, модуль будет сохранен как черновик</small>
+                        </div>
+
+                        <div class="col-12">
+                            <a href="{{ route('admin.educationModules.index') }}" class="btn btn-outline-secondary waves-effect">Отмена</a>
+                            <button type="submit" class="btn btn-primary waves-effect waves-light">Создать модуль</button>
+                        </div>
+                    </div>
                 </form>
             </div>
-
         </div>
-        <!-- / Content -->
-
-        <div class="content-backdrop fade"></div>
     </div>
-    <!-- Content wrapper -->
 @endsection
-

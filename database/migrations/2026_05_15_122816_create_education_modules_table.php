@@ -14,8 +14,13 @@ return new class extends Migration
         Schema::create('education_modules', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->string('image')->nullable();
-            $table->string('complexity')->nullable();
+            $table->integer('complexity')->default(1);
+            $table->text('description')->nullable();
+            $table->boolean('is_published')->default(false);
+            $table->integer('sort_order')->default(0);
+            $table->jsonb('metadata')->nullable();
             $table->timestamps();
         });
     }

@@ -77,7 +77,7 @@
                             </tbody>
                         </table>
                         <div class="mt-2">
-                            {{$cities->links()}}
+                            {{$cities->links('vendor.pagination.tailwind')}}
                         </div>
                     </div>
                 </div>
