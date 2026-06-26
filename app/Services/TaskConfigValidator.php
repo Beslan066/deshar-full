@@ -12,6 +12,12 @@ class TaskConfigValidator
     public function validate(array $config, string $typeSlug): array
     {
         $rules = $this->getValidationRules($typeSlug);
+
+        // Если rules пустые - значит тип не поддерживается
+        if (empty($rules)) {
+            return $config;
+        }
+
         $validator = validator($config, $rules);
 
         if ($validator->fails()) {
@@ -24,7 +30,7 @@ class TaskConfigValidator
     /**
      * Получить правила валидации для типа задания
      */
-    private function getValidationRules(string $type): array
+    public function getValidationRules(string $type): array
     {
         return match ($type) {
             'choose_one' => [
@@ -46,9 +52,16 @@ class TaskConfigValidator
                 'max_select' => 'integer|min:1',
                 'shuffle_options' => 'boolean',
             ],
+            'match_pairs' => [
+                'pairs' => 'required|array|min:2',
+                'pairs.*.left' => 'required|string|max:255',
+                'pairs.*.right' => 'required|string|max:255',
+                'pairs.*.image' => 'nullable|string|max:255',
+                'shuffle_pairs' => 'boolean',
+                'time_limit' => 'nullable|integer|min:0',
+            ],
             'match_images' => [
                 'pairs' => 'required|array|min:2',
-                'pairs.*.id' => 'required|integer',
                 'pairs.*.text' => 'required|string|max:255',
                 'pairs.*.image' => 'required|string|max:255',
                 'pairs.*.correct_match' => 'required|string|max:255',
