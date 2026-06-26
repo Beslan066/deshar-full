@@ -65,7 +65,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <form action="{{ route('admin.tasks.destroy', $task) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('admin.tasks.delete', $task) }}" method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Удалить задание?')">

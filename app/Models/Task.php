@@ -8,7 +8,6 @@ use App\Services\TaskConfigValidator;
 
 class Task extends Model
 {
-    use HasFactory;
 
     protected $table = 'tasks';
 
@@ -49,20 +48,14 @@ class Task extends Model
      */
     public function lesson()
     {
-        return $this->belongsTo(Lesson::class);
+        return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
-    /**
-     * Связь с типом задания
-     */
     public function taskType()
     {
         return $this->belongsTo(TaskType::class);
     }
 
-    /**
-     * Связь с прогрессом пользователей
-     */
     public function userProgress()
     {
         return $this->hasMany(UserTaskProgress::class);

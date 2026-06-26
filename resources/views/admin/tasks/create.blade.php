@@ -22,6 +22,7 @@
 
                 <form class="card-body" action="{{ route('admin.tasks.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="config" value="">
 
                     <div class="row g-6">
                         {{-- ОСНОВНЫЕ ПОЛЯ --}}
@@ -2839,6 +2840,24 @@
                         updateJsonPreview();
                     }
                 });
+            });
+
+            document.querySelector('form')?.addEventListener('submit', function(e) {
+                const configField = document.querySelector('input[name="config"]');
+                if (configField) {
+                    // Собираем все поля config из формы
+                    const configData = {};
+                    const configInputs = this.querySelectorAll('[name^="config["]');
+                    configInputs.forEach(input => {
+                        const name = input.name.replace('config[', '').replace(']', '');
+                        if (input.type === 'checkbox') {
+                            configData[name] = input.checked ? true : false;
+                        } else {
+                            configData[name] = input.value;
+                        }
+                    });
+                    configField.value = JSON.stringify(configData);
+                }
             });
         </script>
     @endpush

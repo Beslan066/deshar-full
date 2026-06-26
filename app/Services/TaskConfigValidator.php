@@ -13,7 +13,6 @@ class TaskConfigValidator
     {
         $rules = $this->getValidationRules($typeSlug);
 
-        // Если rules пустые - значит тип не поддерживается
         if (empty($rules)) {
             return $config;
         }
@@ -33,6 +32,7 @@ class TaskConfigValidator
     public function getValidationRules(string $type): array
     {
         return match ($type) {
+            // 1. Выбери один из 4
             'choose_one' => [
                 'question' => 'required|string|max:500',
                 'options' => 'required|array|size:4',
@@ -42,6 +42,8 @@ class TaskConfigValidator
                 'shuffle_options' => 'boolean',
                 'explanation' => 'nullable|string',
             ],
+
+            // 2. Выбери 3 из 6
             'choose_three' => [
                 'question' => 'required|string|max:500',
                 'options' => 'required|array|size:6',
@@ -52,21 +54,18 @@ class TaskConfigValidator
                 'max_select' => 'integer|min:1',
                 'shuffle_options' => 'boolean',
             ],
-            'match_pairs' => [
-                'pairs' => 'required|array|min:2',
-                'pairs.*.left' => 'required|string|max:255',
-                'pairs.*.right' => 'required|string|max:255',
-                'pairs.*.image' => 'nullable|string|max:255',
-                'shuffle_pairs' => 'boolean',
-                'time_limit' => 'nullable|integer|min:0',
-            ],
+
+            // 3. Сопоставь с изображениями
             'match_images' => [
                 'pairs' => 'required|array|min:2',
+                'pairs.*.id' => 'required|integer',
                 'pairs.*.text' => 'required|string|max:255',
                 'pairs.*.image' => 'required|string|max:255',
                 'pairs.*.correct_match' => 'required|string|max:255',
                 'shuffle_pairs' => 'boolean',
             ],
+
+            // 4. Собери слово из букв
             'build_word' => [
                 'image' => 'nullable|string|max:255',
                 'correct_word' => 'required|string|max:255',
@@ -76,6 +75,8 @@ class TaskConfigValidator
                 'hint' => 'nullable|string',
                 'shuffle_letters' => 'boolean',
             ],
+
+            // 5. Поставь ударение
             'stress_mark' => [
                 'word' => 'required|string|max:255',
                 'letters' => 'required|array|min:1',
@@ -84,6 +85,8 @@ class TaskConfigValidator
                 'letters.*.position' => 'required|integer|min:0',
                 'correct_index' => 'required|integer|min:0',
             ],
+
+            // 6. Перемести слова
             'drag_drop_text' => [
                 'sentences' => 'required|array|min:2',
                 'sentences.*.id' => 'required|integer',
@@ -95,6 +98,8 @@ class TaskConfigValidator
                 'extra_words' => 'array',
                 'shuffle_words' => 'boolean',
             ],
+
+            // 7. Расставь части истории
             'story_order' => [
                 'parts' => 'required|array|min:2',
                 'parts.*.id' => 'required|integer',
@@ -103,6 +108,8 @@ class TaskConfigValidator
                 'shuffle_parts' => 'boolean',
                 'show_numbers' => 'boolean',
             ],
+
+            // 8. Исправь слово
             'fix_word' => [
                 'sentence' => 'required|string|max:500',
                 'wrong_word' => 'required|string|max:255',
@@ -111,6 +118,8 @@ class TaskConfigValidator
                 'correct_form' => 'required|string|max:255',
                 'hint' => 'nullable|string',
             ],
+
+            // 9. Сопоставь цвета с категориями
             'color_categories' => [
                 'items' => 'required|array|min:2',
                 'items.*.id' => 'required|integer',
@@ -122,6 +131,8 @@ class TaskConfigValidator
                 'categories.*.color' => 'required|string|regex:/^#[0-9A-F]{6}$/i',
                 'shuffle_items' => 'boolean',
             ],
+
+            // 10. Расставь буквы
             'alphabet_letters' => [
                 'letters' => 'required|array|min:2',
                 'letters.*.letter' => 'required|string|max:1',
@@ -130,6 +141,8 @@ class TaskConfigValidator
                 'shuffled_letters.*' => 'string|max:1',
                 'alphabet' => 'nullable|string',
             ],
+
+            // 11. Расставь изображения
             'alphabet_images' => [
                 'items' => 'required|array|min:2',
                 'items.*.id' => 'required|integer',
@@ -140,6 +153,8 @@ class TaskConfigValidator
                 'shuffled_items.*' => 'integer',
                 'show_names' => 'boolean',
             ],
+
+            // 12. Расставь слова
             'alphabet_words' => [
                 'words' => 'required|array|min:2',
                 'words.*.id' => 'required|integer',
@@ -149,16 +164,21 @@ class TaskConfigValidator
                 'shuffled_words.*' => 'integer',
                 'alphabet' => 'nullable|string',
             ],
+
+            // 13. Соедини буквы
             'connect_letters' => [
                 'letters' => 'required|array|min:2',
                 'letters.*.id' => 'required|integer',
                 'letters.*.letter' => 'required|string|max:1',
+                'letters.*.position' => 'required|array',
                 'letters.*.position.x' => 'required|integer',
                 'letters.*.position.y' => 'required|integer',
                 'correct_order' => 'required|array',
                 'correct_order.*' => 'string',
                 'alphabet' => 'nullable|string',
             ],
+
+            // 14. Составь слово по картинке
             'word_from_image' => [
                 'image' => 'required|string|max:255',
                 'correct_word' => 'required|string|max:255',
@@ -168,6 +188,8 @@ class TaskConfigValidator
                 'hint' => 'nullable|string',
                 'shuffle_letters' => 'boolean',
             ],
+
+            // 15. Найди по признаку
             'find_by_rule' => [
                 'words' => 'required|array|min:2',
                 'words.*.id' => 'required|integer',
@@ -180,6 +202,8 @@ class TaskConfigValidator
                 'min_select' => 'integer|min:1',
                 'shuffle_words' => 'boolean',
             ],
+
+            // 16. Найди лишнюю букву
             'find_extra_letter' => [
                 'image' => 'nullable|string|max:255',
                 'word' => 'required|string|max:255',
@@ -191,6 +215,8 @@ class TaskConfigValidator
                 'correct_index' => 'required|integer|min:0',
                 'hint' => 'nullable|string',
             ],
+
+            // 17. Соедини с категорией
             'connect_category' => [
                 'items' => 'required|array|min:2',
                 'items.*.id' => 'required|integer',
@@ -204,6 +230,8 @@ class TaskConfigValidator
                 'line_colors' => 'array',
                 'line_colors.*' => 'string|regex:/^#[0-9A-F]{6}$/i',
             ],
+
+            // 18. Перетащи к картинке
             'drag_to_image' => [
                 'pairs' => 'required|array|min:2',
                 'pairs.*.id' => 'required|integer',
@@ -212,6 +240,8 @@ class TaskConfigValidator
                 'shuffle_words' => 'boolean',
                 'shuffle_images' => 'boolean',
             ],
+
+            // 19. Найди по условию
             'find_by_condition' => [
                 'images' => 'required|array|min:2',
                 'images.*.id' => 'required|integer',
@@ -225,6 +255,8 @@ class TaskConfigValidator
                 'min_select' => 'integer|min:1',
                 'max_select' => 'integer|min:1',
             ],
+
+            // 20. Сопоставь с поведением
             'match_behavior' => [
                 'items' => 'required|array|min:2',
                 'items.*.id' => 'required|integer',
@@ -235,6 +267,8 @@ class TaskConfigValidator
                 'behaviors.*' => 'string|max:255',
                 'shuffle_items' => 'boolean',
             ],
+
+            // 21. Составь диалог
             'build_dialogue' => [
                 'dialogues' => 'required|array|min:2',
                 'dialogues.*.id' => 'required|integer',
@@ -247,6 +281,17 @@ class TaskConfigValidator
                 'shuffle_options' => 'boolean',
                 'show_speakers' => 'boolean',
             ],
+
+            // Сопоставление пар
+            'match_pairs' => [
+                'pairs' => 'required|array|min:2',
+                'pairs.*.left' => 'required|string|max:255',
+                'pairs.*.right' => 'required|string|max:255',
+                'pairs.*.image' => 'nullable|string|max:255',
+                'shuffle_pairs' => 'boolean',
+                'time_limit' => 'nullable|integer|min:0',
+            ],
+
             default => [],
         };
     }
