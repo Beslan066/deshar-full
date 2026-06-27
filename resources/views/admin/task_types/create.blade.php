@@ -5,6 +5,19 @@
         <div class="container-xxl flex-grow-1 container-p-y">
             <div class="card">
                 <h5 class="card-header">Создание типа задания</h5>
+
+                @if ($errors->any())
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            <h6>Ошибки валидации:</h6>
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
                 <form class="card-body" action="{{ route('admin.taskTypes.store') }}" method="POST">
                     @csrf
 
@@ -88,16 +101,17 @@
                                     <div class="alert alert-info">
                                         <strong>Примеры:</strong>
                                         <pre class="mb-0 mt-2" style="font-size: 12px;">
-<code>{
-    "question": "",
-    "options": [
-        {"id": "a", "text": "", "is_correct": false},
-        {"id": "b", "text": "", "is_correct": false},
-        {"id": "c", "text": "", "is_correct": false},
-        {"id": "d", "text": "", "is_correct": false}
-    ],
-    "shuffle_options": true
-}</code></pre>
+                                            <code>{
+                                                "question": "",
+                                                "options": [
+                                                    {"id": "a", "text": "", "is_correct": false},
+                                                    {"id": "b", "text": "", "is_correct": false},
+                                                    {"id": "c", "text": "", "is_correct": false},
+                                                    {"id": "d", "text": "", "is_correct": false}
+                                                ],
+                                                "shuffle_options": true
+                                            }</code>
+                                        </pre>
                                     </div>
                                 </div>
                             </div>
@@ -153,6 +167,30 @@
             // Если пользователь вручную редактирует slug, отключаем автогенерацию
             document.getElementById('slug').addEventListener('input', function() {
                 this.dataset.generated = 'false';
+            });
+
+            // Валидация JSON перед отправкой формы
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const configTextarea = document.getElementById('default_config');
+                const configValue = configTextarea.value.trim();
+
+                if (configValue && configValue !== '{}') {
+                    try {
+                        JSON.parse(configValue);
+                    } catch (e) {
+                        e.preventDefault();
+                        alert('Ошибка в JSON конфиге: ' + e.message);
+                        configTextarea.classList.add('is-invalid');
+                        configTextarea.focus();
+                        return false;
+                    }
+                }
+            });
+
+            // Убираем ошибку при изменении
+            document.getElementById('default_config').addEventListener('input', function() {
+                this.classList.remove('is-invalid');
             });
         });
     </script>

@@ -30,21 +30,49 @@ class IndexController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // 1. Подготавливаем все данные
+        $data = $request->all();
+
+        // Преобразуем is_active в boolean ДО валидации
+        $data['is_active'] = $request->has('is_active') && $request->is_active === 'on';
+
+        // Преобразуем default_config из JSON строки в массив
+        if ($request->has('default_config') && !empty($request->default_config)) {
+            $jsonString = trim($request->default_config);
+            $defaultConfig = json_decode($jsonString, true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $data['default_config'] = $defaultConfig;
+            } else {
+                return back()
+                    ->withInput()
+                    ->withErrors(['default_config' => 'Неверный формат JSON: ' . json_last_error_msg()]);
+            }
+        } else {
+            $data['default_config'] = [];
+        }
+
+        // 2. Валидируем подготовленные данные
+        $validator = validator($data, [
             'slug' => 'required|string|max:50|unique:task_types,slug',
             'name' => 'required|string|max:100',
             'icon' => 'nullable|string|max:50',
             'description' => 'nullable|string',
             'default_config' => 'nullable|array',
-            'is_active' => 'nullable|boolean',
+            'is_active' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
 
-        $data = $request->all();
-        $data['is_active'] = $request->has('is_active');
-        $data['sort_order'] = $request->sort_order ?? 0;
+        if ($validator->fails()) {
+            return back()
+                ->withInput()
+                ->withErrors($validator);
+        }
 
-        $taskType = TaskType::create($data);
+        $validatedData = $validator->validated();
+        $validatedData['sort_order'] = $request->sort_order ?? 0;
+
+        $taskType = TaskType::create($validatedData);
 
         return redirect()
             ->route('admin.taskTypes.index')
@@ -64,20 +92,50 @@ class IndexController extends Controller
      */
     public function update(Request $request, TaskType $taskType)
     {
-        $request->validate([
+        // 1. Подготавливаем все данные (так же как в store)
+        $data = $request->all();
+
+        // Преобразуем is_active в boolean ДО валидации
+        $data['is_active'] = $request->has('is_active') && $request->is_active === 'on';
+
+        // Преобразуем default_config из JSON строки в массив
+        if ($request->has('default_config') && !empty($request->default_config)) {
+            $jsonString = trim($request->default_config);
+            $defaultConfig = json_decode($jsonString, true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $data['default_config'] = $defaultConfig;
+            } else {
+                return back()
+                    ->withInput()
+                    ->withErrors(['default_config' => 'Неверный формат JSON: ' . json_last_error_msg()]);
+            }
+        } else {
+            $data['default_config'] = [];
+        }
+
+        // 2. Валидируем подготовленные данные
+        $validator = validator($data, [
             'slug' => 'required|string|max:50|unique:task_types,slug,' . $taskType->id,
             'name' => 'required|string|max:100',
             'icon' => 'nullable|string|max:50',
             'description' => 'nullable|string',
             'default_config' => 'nullable|array',
-            'is_active' => 'nullable|boolean',
+            'is_active' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
 
-        $data = $request->all();
-        $data['is_active'] = $request->has('is_active');
+        if ($validator->fails()) {
+            return back()
+                ->withInput()
+                ->withErrors($validator);
+        }
 
-        $taskType->update($data);
+        // 3. Подготавливаем финальные данные
+        $validatedData = $validator->validated();
+        $validatedData['sort_order'] = $request->sort_order ?? 0;
+
+        $taskType->update($validatedData);
 
         return redirect()
             ->route('admin.taskTypes.index')

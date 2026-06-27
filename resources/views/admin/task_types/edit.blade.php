@@ -5,9 +5,23 @@
         <div class="container-xxl flex-grow-1 container-p-y">
             <div class="card">
                 <h5 class="card-header">Редактирование типа задания</h5>
+
+                @if ($errors->any())
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            <h6>Ошибки валидации:</h6>
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+
                 <form class="card-body" action="{{ route('admin.taskTypes.update', $taskType) }}" method="POST">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
 
                     <div class="row g-6">
                         <div class="col-md-6">
@@ -58,8 +72,8 @@
 
                         <div class="col-12">
                             <div class="form-floating form-floating-outline mb-4">
-                            <textarea id="description" class="form-control @error('description') is-invalid @enderror"
-                                      placeholder="Описание типа задания" name="description" rows="3">{{ old('description', $taskType->description) }}</textarea>
+                                <textarea id="description" class="form-control @error('description') is-invalid @enderror"
+                                          placeholder="Описание типа задания" name="description" rows="3">{{ old('description', $taskType->description) }}</textarea>
                                 <label for="description">Описание</label>
                                 @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -74,9 +88,9 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="form-floating form-floating-outline mb-4">
-                                    <textarea id="default_config" class="form-control @error('default_config') is-invalid @enderror"
-                                              placeholder='{"question": "", "options": []}' name="default_config" rows="10"
-                                              style="font-family: monospace; font-size: 14px;">{{ old('default_config', json_encode($taskType->default_config ?? (object)[], JSON_PRETTY_PRINT)) }}</textarea>
+                                        <textarea id="default_config" class="form-control @error('default_config') is-invalid @enderror"
+                                                  placeholder='{"question": "", "options": []}' name="default_config" rows="10"
+                                                  style="font-family: monospace; font-size: 14px;">{{ old('default_config', $taskType->default_config ? json_encode($taskType->default_config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '{}') }}</textarea>
                                         <label for="default_config">JSON конфиг по умолчанию</label>
                                         @error('default_config')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -89,16 +103,17 @@
                                     <div class="alert alert-info">
                                         <strong>Примеры:</strong>
                                         <pre class="mb-0 mt-2" style="font-size: 12px;">
-<code>{
-    "question": "",
-    "options": [
-        {"id": "a", "text": "", "is_correct": false},
-        {"id": "b", "text": "", "is_correct": false},
-        {"id": "c", "text": "", "is_correct": false},
-        {"id": "d", "text": "", "is_correct": false}
-    ],
-    "shuffle_options": true
-}</code></pre>
+                                            <code>{
+                                                "question": "",
+                                                "options": [
+                                                    {"id": "a", "text": "", "is_correct": false},
+                                                    {"id": "b", "text": "", "is_correct": false},
+                                                    {"id": "c", "text": "", "is_correct": false},
+                                                    {"id": "d", "text": "", "is_correct": false}
+                                                ],
+                                                "shuffle_options": true
+                                            }</code>
+                                        </pre>
                                     </div>
                                 </div>
                             </div>
@@ -126,16 +141,16 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Автогенерация slug из названия (только если поле пустое или было сгенерировано)
             const nameInput = document.getElementById('name');
             const slugInput = document.getElementById('slug');
 
-            // Проверяем, был ли slug сгенерирован автоматически
-            if (slugInput.value && !slugInput.dataset.generated) {
-                slugInput.dataset.generated = 'true';
-            }
+            // Сохраняем исходный slug при загрузке
+            const originalSlug = slugInput.value;
+            slugInput.dataset.generated = 'false';
 
+            // Автогенерация slug из названия (только если поле было сгенерировано или пустое)
             nameInput.addEventListener('input', function() {
+                // Если slug пустой или был сгенерирован автоматически
                 if (!slugInput.value || slugInput.dataset.generated === 'true') {
                     const slug = this.value
                         .toLowerCase()
@@ -158,8 +173,58 @@
                 }
             });
 
+            // Если пользователь вручную редактирует slug, отключаем автогенерацию
             slugInput.addEventListener('input', function() {
                 this.dataset.generated = 'false';
+            });
+
+            // Валидация JSON перед отправкой формы
+            const form = document.querySelector('form');
+            const configTextarea = document.getElementById('default_config');
+
+            form.addEventListener('submit', function(e) {
+                const configValue = configTextarea.value.trim();
+
+                if (configValue && configValue !== '{}') {
+                    try {
+                        JSON.parse(configValue);
+                    } catch (error) {
+                        e.preventDefault();
+                        alert('Ошибка в JSON конфиге: ' + error.message);
+                        configTextarea.classList.add('is-invalid');
+                        configTextarea.focus();
+                        return false;
+                    }
+                }
+            });
+
+            // Убираем ошибку при изменении и валидируем JSON
+            configTextarea.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+
+                // Визуальная индикация валидности JSON
+                const value = this.value.trim();
+                if (value && value !== '{}') {
+                    try {
+                        JSON.parse(value);
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } catch (e) {
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                    }
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.classList.remove('is-valid');
+                }
+            });
+
+            // Автоматическое форматирование JSON (опционально)
+            document.querySelector('[onclick*="default_config"]')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                configTextarea.value = '{}';
+                configTextarea.classList.remove('is-invalid');
+                configTextarea.classList.remove('is-valid');
             });
         });
     </script>
