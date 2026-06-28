@@ -26,5 +26,39 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/auth/stats', [AuthController::class, 'stats']);
     Route::delete('/auth/account', [AuthController::class, 'deleteAccount']);
 
-    // Здесь защищенные эндпоинты
+});
+
+
+// Публичные маршруты для справочников (ДО регистрации)
+Route::group(['namespace' => 'Api'], function () {
+    Route::group(['namespace' => 'Country', 'prefix' => 'countries'], function () {
+        Route::get('/', [App\Http\Controllers\Api\CountryController::class, 'index']);
+    });
+
+    Route::group(['namespace' => 'District', 'prefix' => 'districts'], function () {
+        Route::get('/', [App\Http\Controllers\Api\DistrictController::class, 'index']);
+    });
+
+    Route::group(['namespace' => 'City', 'prefix' => 'cities'], function () {
+        Route::get('/', [App\Http\Controllers\Api\CityController::class, 'index']);
+    });
+
+    Route::group(['namespace' => 'School', 'prefix' => 'schools'], function () {
+        Route::get('/', [App\Http\Controllers\Api\SchoolController::class, 'index']);
+    });
+});
+
+
+
+// Получение текущего пользователя (требует авторизацию)
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+// Защищенные маршруты (только для авторизованных)
+Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () {
+    Route::group(['namespace' => 'Role', 'prefix' => 'roles'], function () {
+        Route::get('/', [App\Http\Controllers\Api\RoleController::class, 'index']);
+    });
+
 });
