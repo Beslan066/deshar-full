@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Lessons;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
@@ -10,7 +10,7 @@ use App\Services\TaskConfigValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class TaskController extends Controller
+class IndexController extends Controller
 {
     protected $configValidator;
 
