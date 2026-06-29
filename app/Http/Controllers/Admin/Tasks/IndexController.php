@@ -19,9 +19,6 @@ class IndexController extends Controller
         $this->configValidator = $configValidator;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Task::with(['lesson', 'taskType']);
@@ -39,9 +36,6 @@ class IndexController extends Controller
         return view('admin.tasks.index', compact('tasks'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
         $lessons = Lesson::where('is_published', true)->get();
@@ -51,39 +45,17 @@ class IndexController extends Controller
         return view('admin.tasks.create', compact('lessons', 'taskTypes', 'selectedLessonId'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        // ✅ Сначала преобразуем config из JSON строки в массив
-        $requestData = $request->all();
 
-        // Если config пришел как строка - парсим JSON
-        if (isset($requestData['config']) && is_string($requestData['config'])) {
-            $configData = json_decode($requestData['config'], true);
 
-            // Проверяем, что JSON валидный
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return redirect()
-                    ->back()
-                    ->withErrors(['config' => 'Неверный формат JSON в конфигурации: ' . json_last_error_msg()])
-                    ->withInput();
-            }
-
-            // Заменяем строку на массив
-            $requestData['config'] = $configData;
-            $request->merge(['config' => $configData]);
-        }
-
-        // Теперь валидируем
         $request->validate([
             'lesson_id' => 'required|exists:lessons,id',
             'task_type_id' => 'required|exists:task_types,id',
             'sort_order' => 'nullable|integer|min:0',
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'config' => 'required|array', // Теперь это массив
+            'config' => 'required|array', // ← Ожидаем массив
             'max_attempts' => 'nullable|integer|min:1',
             'time_limit_seconds' => 'nullable|integer|min:0',
             'xp_reward' => 'nullable|integer|min:0',
@@ -96,10 +68,32 @@ class IndexController extends Controller
             'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
         ]);
 
-        // Получаем config (уже массив)
+
+
+        //  ПРЕОБРАЗУЕМ CONFIG В МАССИВ
         $configData = $request->input('config');
 
-        // Валидируем конфиг через сервис
+        // Если config пришел как JSON строка - парсим
+        if (is_string($configData)) {
+            $configData = json_decode($configData, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return redirect()
+                    ->back()
+                    ->withErrors(['config' => 'Неверный формат JSON в конфигурации'])
+                    ->withInput();
+            }
+        }
+
+        // Если config пришел как массив с ключами, но значения могут быть строками JSON
+        if (is_array($configData)) {
+            foreach ($configData as $key => $value) {
+                if (is_string($value) && $this->isJson($value)) {
+                    $configData[$key] = json_decode($value, true);
+                }
+            }
+        }
+
+        // Валидируем конфиг
         $taskType = TaskType::find($request->task_type_id);
         $validatedConfig = $this->configValidator->validate($configData, $taskType->slug);
 
@@ -144,9 +138,6 @@ class IndexController extends Controller
             ->with('success', 'Задание "' . ($task->title ?? '#' . $task->id) . '" успешно создано!');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Task $task)
     {
         $lessons = Lesson::where('is_published', true)->get();
@@ -155,28 +146,8 @@ class IndexController extends Controller
         return view('admin.tasks.edit', compact('task', 'lessons', 'taskTypes'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Task $task)
     {
-        // ✅ Сначала преобразуем config из JSON строки в массив
-        $requestData = $request->all();
-
-        if (isset($requestData['config']) && is_string($requestData['config'])) {
-            $configData = json_decode($requestData['config'], true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return redirect()
-                    ->back()
-                    ->withErrors(['config' => 'Неверный формат JSON в конфигурации: ' . json_last_error_msg()])
-                    ->withInput();
-            }
-
-            $requestData['config'] = $configData;
-            $request->merge(['config' => $configData]);
-        }
-
         $request->validate([
             'lesson_id' => 'required|exists:lessons,id',
             'task_type_id' => 'required|exists:task_types,id',
@@ -196,7 +167,26 @@ class IndexController extends Controller
             'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
         ]);
 
+        //  ПРЕОБРАЗУЕМ CONFIG В МАССИВ
         $configData = $request->input('config');
+
+        if (is_string($configData)) {
+            $configData = json_decode($configData, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return redirect()
+                    ->back()
+                    ->withErrors(['config' => 'Неверный формат JSON в конфигурации'])
+                    ->withInput();
+            }
+        }
+
+        if (is_array($configData)) {
+            foreach ($configData as $key => $value) {
+                if (is_string($value) && $this->isJson($value)) {
+                    $configData[$key] = json_decode($value, true);
+                }
+            }
+        }
 
         // Валидируем конфиг
         $taskType = TaskType::find($request->task_type_id);
@@ -260,9 +250,6 @@ class IndexController extends Controller
             ->with('success', 'Задание "' . ($task->title ?? '#' . $task->id) . '" успешно обновлено!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Task $task)
     {
         $title = $task->title ?? 'Задание #' . $task->id;
@@ -286,9 +273,6 @@ class IndexController extends Controller
             ->with('success', 'Задание "' . $title . '" успешно удалено!');
     }
 
-    /**
-     * Получить дефолтный конфиг для типа задания (AJAX)
-     */
     public function getDefaultConfig(Request $request)
     {
         $taskType = TaskType::find($request->task_type_id);
@@ -302,5 +286,14 @@ class IndexController extends Controller
             'config' => $defaultConfig,
             'validation_rules' => $taskType->getValidationRules(),
         ]);
+    }
+
+    /**
+     * Проверяет, является ли строка валидным JSON
+     */
+    private function isJson(string $string): bool
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }
