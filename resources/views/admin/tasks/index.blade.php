@@ -69,7 +69,7 @@
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Удалить задание?')">
-                                                            <i class="bx bx-trash"></i> Удалить
+                                                            <i class="bx bx-trash"></i>Удалить
                                                         </button>
                                                     </form>
                                                 </li>

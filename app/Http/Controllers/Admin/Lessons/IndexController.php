@@ -3,241 +3,115 @@
 namespace App\Http\Controllers\Admin\Lessons;
 
 use App\Http\Controllers\Controller;
+use App\Models\EducationModulePiece;
 use App\Models\Lesson;
-use App\Models\Task;
-use App\Models\TaskType;
-use App\Services\TaskConfigValidator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class IndexController extends Controller
 {
-    protected $configValidator;
-
-    public function __construct(TaskConfigValidator $configValidator)
-    {
-        $this->configValidator = $configValidator;
-    }
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
-        $query = Task::with(['lesson', 'taskType']);
+        $query = Lesson::with('piece');
 
-        if ($request->has('lesson_id') && $request->lesson_id) {
-            $query->where('lesson_id', $request->lesson_id);
+        // Фильтр по разделу
+        if ($request->has('piece_id') && $request->piece_id) {
+            $query->where('piece_id', $request->piece_id);
         }
 
-        if ($request->has('task_type_id') && $request->task_type_id) {
-            $query->where('task_type_id', $request->task_type_id);
-        }
+        $lessons = $query->orderBy('sort_order')->paginate(20);
 
-        $tasks = $query->orderBy('sort_order')->paginate(20);
-
-        return view('admin.tasks.index', compact('tasks'));
+        return view('admin.lessons.index', compact('lessons'));
     }
 
-    public function create(Request $request)
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
     {
-        $lessons = Lesson::where('is_published', true)->get();
-        $taskTypes = TaskType::where('is_active', true)->get();
-        $selectedLessonId = $request->lesson_id ?? null;
-
-        return view('admin.tasks.create', compact('lessons', 'taskTypes', 'selectedLessonId'));
+        $pieces = EducationModulePiece::where('is_published', true)->get();
+        return view('admin.lessons.create', compact('pieces'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'lesson_id' => 'required|exists:lessons,id',
-            'task_type_id' => 'required|exists:task_types,id',
-            'sort_order' => 'nullable|integer|min:0',
-            'title' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'piece_id' => 'required|exists:education_module_pieces,id',
             'description' => 'nullable|string',
-            'config' => 'required|array',
-            'max_attempts' => 'nullable|integer|min:1',
-            'time_limit_seconds' => 'nullable|integer|min:0',
-            'xp_reward' => 'nullable|integer|min:0',
-            'hints' => 'nullable|array',
             'is_published' => 'nullable|boolean',
             'is_required' => 'nullable|boolean',
-            // Медиа
-            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
-            'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+            'sort_order' => 'nullable|integer',
+            'xp_reward' => 'nullable|integer',
+            'estimated_time' => 'nullable|integer',
         ]);
 
-        // Валидируем конфиг
-        $taskType = TaskType::find($request->task_type_id);
-        $validatedConfig = $this->configValidator->validate($request->config, $taskType->slug);
-
         $data = $request->all();
-        $data['config'] = $validatedConfig;
+        $data['slug'] = Str::slug($request->name);
         $data['is_published'] = $request->has('is_published');
         $data['is_required'] = $request->has('is_required');
+        $data['sort_order'] = $request->sort_order ?? 0;
 
-        // Обработка подсказок
-        if ($request->has('hints')) {
-            $data['hints'] = array_filter($request->hints, function ($hint) {
-                return !empty($hint);
-            });
-        }
-
-        // ============================================================
-        // ОБРАБОТКА МЕДИАФАЙЛОВ
-        // ============================================================
-
-        // Аудио
-        if ($request->hasFile('audio_file')) {
-            $path = $request->file('audio_file')->store('tasks/audio', 'public');
-            $data['config']['audio_url'] = '/storage/' . $path;
-        }
-
-        // Изображение
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('tasks/images', 'public');
-            $data['config']['image_url'] = '/storage/' . $path;
-        }
-
-        // Видео
-        if ($request->hasFile('video_file')) {
-            $path = $request->file('video_file')->store('tasks/videos', 'public');
-            $data['config']['video_url'] = '/storage/' . $path;
-        }
-
-        $task = Task::create($data);
+        $lesson = Lesson::create($data);
 
         return redirect()
-            ->route('admin.tasks.index', ['lesson_id' => $task->lesson_id])
-            ->with('success', 'Задание "' . ($task->title ?? '#' . $task->id) . '" успешно создано!');
+            ->route('admin.lessons.index')
+            ->with('success', 'Урок "' . $lesson->name . '" успешно создан!');
     }
 
-    public function edit(Task $task)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Lesson $lesson)
     {
-        $lessons = Lesson::where('is_published', true)->get();
-        $taskTypes = TaskType::where('is_active', true)->get();
-
-        return view('admin.tasks.edit', compact('task', 'lessons', 'taskTypes'));
+        $pieces = EducationModulePiece::where('is_published', true)->get();
+        return view('admin.lessons.edit', compact('lesson', 'pieces'));
     }
 
-    public function update(Request $request, Task $task)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Lesson $lesson)
     {
         $request->validate([
-            'lesson_id' => 'required|exists:lessons,id',
-            'task_type_id' => 'required|exists:task_types,id',
-            'sort_order' => 'nullable|integer|min:0',
-            'title' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'piece_id' => 'required|exists:education_module_pieces,id',
             'description' => 'nullable|string',
-            'config' => 'required|array',
-            'max_attempts' => 'nullable|integer|min:1',
-            'time_limit_seconds' => 'nullable|integer|min:0',
-            'xp_reward' => 'nullable|integer|min:0',
-            'hints' => 'nullable|array',
             'is_published' => 'nullable|boolean',
             'is_required' => 'nullable|boolean',
-            // Медиа
-            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
-            'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+            'sort_order' => 'nullable|integer',
+            'xp_reward' => 'nullable|integer',
+            'estimated_time' => 'nullable|integer',
         ]);
 
-        // Валидируем конфиг
-        $taskType = TaskType::find($request->task_type_id);
-        $validatedConfig = $this->configValidator->validate($request->config, $taskType->slug);
-
         $data = $request->all();
-        $data['config'] = $validatedConfig;
+        $data['slug'] = Str::slug($request->name);
         $data['is_published'] = $request->has('is_published');
         $data['is_required'] = $request->has('is_required');
 
-        if ($request->has('hints')) {
-            $data['hints'] = array_filter($request->hints, function ($hint) {
-                return !empty($hint);
-            });
-        }
-
-        // ============================================================
-        // ОБРАБОТКА МЕДИАФАЙЛОВ
-        // ============================================================
-
-        // Аудио
-        if ($request->hasFile('audio_file')) {
-            // Удаляем старое
-            if (isset($task->config['audio_url'])) {
-                $oldPath = str_replace('/storage/', '', $task->config['audio_url']);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-            }
-            $path = $request->file('audio_file')->store('tasks/audio', 'public');
-            $data['config']['audio_url'] = '/storage/' . $path;
-        }
-
-        // Изображение
-        if ($request->hasFile('image_file')) {
-            if (isset($task->config['image_url'])) {
-                $oldPath = str_replace('/storage/', '', $task->config['image_url']);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-            }
-            $path = $request->file('image_file')->store('tasks/images', 'public');
-            $data['config']['image_url'] = '/storage/' . $path;
-        }
-
-        // Видео
-        if ($request->hasFile('video_file')) {
-            if (isset($task->config['video_url'])) {
-                $oldPath = str_replace('/storage/', '', $task->config['video_url']);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-            }
-            $path = $request->file('video_file')->store('tasks/videos', 'public');
-            $data['config']['video_url'] = '/storage/' . $path;
-        }
-
-        $task->update($data);
+        $lesson->update($data);
 
         return redirect()
-            ->route('admin.tasks.index', ['lesson_id' => $task->lesson_id])
-            ->with('success', 'Задание "' . ($task->title ?? '#' . $task->id) . '" успешно обновлено!');
+            ->route('admin.lessons.index')
+            ->with('success', 'Урок "' . $lesson->name . '" успешно обновлен!');
     }
 
-    public function destroy(Task $task)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Lesson $lesson)
     {
-        $title = $task->title ?? 'Задание #' . $task->id;
-        $lessonId = $task->lesson_id;
-
-        // Удаляем медиафайлы
-        $mediaFields = ['audio_url', 'image_url', 'video_url'];
-        foreach ($mediaFields as $field) {
-            if (isset($task->config[$field])) {
-                $path = str_replace('/storage/', '', $task->config[$field]);
-                if (Storage::disk('public')->exists($path)) {
-                    Storage::disk('public')->delete($path);
-                }
-            }
-        }
-
-        $task->delete();
+        $name = $lesson->name;
+        $lesson->delete();
 
         return redirect()
-            ->route('admin.tasks.index', ['lesson_id' => $lessonId])
-            ->with('success', 'Задание "' . $title . '" успешно удалено!');
-    }
-
-    public function getDefaultConfig(Request $request)
-    {
-        $taskType = TaskType::find($request->task_type_id);
-        if (!$taskType) {
-            return response()->json(['error' => 'Тип задания не найден'], 404);
-        }
-
-        $defaultConfig = $taskType->default_config ?? [];
-
-        return response()->json([
-            'config' => $defaultConfig,
-            'validation_rules' => $taskType->getValidationRules(),
-        ]);
+            ->route('admin.lessons.index')
+            ->with('success', 'Урок "' . $name . '" успешно удален!');
     }
 }
