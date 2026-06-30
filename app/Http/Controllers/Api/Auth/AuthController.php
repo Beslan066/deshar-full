@@ -28,6 +28,16 @@ class AuthController extends Controller
                     ->uncompromised(),
                 'confirmed'
             ],
+            'role_id' => 'required|integer|exists:roles,id',
+            'country_id' => 'required|integer|exists:countries,id',
+            'city_id' => 'nullable|integer',
+            'region_id' => 'nullable|integer',
+            'district_id' => 'nullable|integer',
+            'birth_date' => 'nullable|date',
+            'user_type' => 'nullable',
+            'confirmed' => 'boolean',
+            'school_id' => 'required|integer|exists:schools,id',
+            'school_class_id' => 'required|integer',
         ]);
 
         $user = User::create([
@@ -38,6 +48,7 @@ class AuthController extends Controller
             'level' => 0,
             'points' => 0,
             'is_active' => true,
+            'confirmed' => false,
             'current_streak' => 0,
             'max_streak' => 0,
         ]);
