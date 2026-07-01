@@ -34,24 +34,48 @@ class AuthController extends Controller
             'region_id' => 'nullable|integer',
             'district_id' => 'nullable|integer',
             'birth_date' => 'nullable|date',
-            'user_type' => 'nullable',
-            'confirmed' => 'boolean',
+            'user_type' => 'nullable|string',
+            'confirmed' => 'nullable|boolean',
             'school_id' => 'required|integer|exists:schools,id',
             'school_class_id' => 'required|integer',
         ]);
 
-        $user = User::create([
+        // Подготовка данных для создания пользователя
+        $userData = [
             'name' => strip_tags($request->name),
             'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
-            'user_type' => 'student',
+            'role_id' => $request->role_id,
+            'country_id' => $request->country_id,
+            'school_id' => $request->school_id,
+            'school_class_id' => $request->school_class_id,
+            'user_type' => $request->user_type ?? 'student', // используем из запроса или дефолт
             'level' => 0,
             'points' => 0,
             'is_active' => true,
-            'confirmed' => false,
+            'confirmed' => $request->confirmed ?? false,
             'current_streak' => 0,
             'max_streak' => 0,
-        ]);
+        ];
+
+        // Добавляем необязательные поля, только если они присутствуют в запросе
+        if ($request->has('city_id')) {
+            $userData['city_id'] = $request->city_id;
+        }
+
+        if ($request->has('region_id')) {
+            $userData['region_id'] = $request->region_id;
+        }
+
+        if ($request->has('district_id')) {
+            $userData['district_id'] = $request->district_id;
+        }
+
+        if ($request->has('birth_date')) {
+            $userData['birth_date'] = $request->birth_date;
+        }
+
+        $user = User::create($userData);
 
         $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
