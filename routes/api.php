@@ -50,6 +50,10 @@ Route::group(['namespace' => 'Api'], function () {
     Route::group(['namespace' => 'School', 'prefix' => 'schools'], function () {
         Route::get('/', [App\Http\Controllers\Api\SchoolController::class, 'index']);
     });
+
+    Route::group(['namespace' => 'SchoolClass', 'prefix' => 'school-classes'], function () {
+        Route::get('/', [App\Http\Controllers\Api\SchoolClassController::class, 'index']);
+    });
 });
 
 
