@@ -16,7 +16,7 @@ class LocalityController extends Controller
     {
         $localities = Locality::query()->select('id', 'name')->paginate(10);
 
-        return response()->json($countries);
+        return response()->json($localities);
     }
 
     /**
