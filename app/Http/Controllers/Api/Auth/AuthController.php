@@ -33,15 +33,18 @@ class AuthController extends Controller
             'city_id' => 'nullable|integer|exists:cities,id',
             'region_id' => 'nullable|integer|exists:regions,id',
             'district_id' => 'nullable|integer|exists:districts,id',
+            'locality_id' => 'nullable|integer|exists:localities,id',
             'birth_date' => 'nullable|date|before:today',
             'user_type' => 'nullable|string',
             'confirmed' => 'nullable|boolean',
             'school_id' => 'required|integer|exists:schools,id',
             'school_class_id' => 'required|integer|exists:school_classes,id',
+            'avatar' => 'nullable|string|max:255',
         ]);
 
-        // Подготовка данных
+        // Подготовка всех данных
         $userData = [
+            // Обязательные поля
             'name' => strip_tags($request->name),
             'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
@@ -49,6 +52,8 @@ class AuthController extends Controller
             'country_id' => $request->country_id,
             'school_id' => $request->school_id,
             'school_class_id' => $request->school_class_id,
+
+            // Поля со значениями по умолчанию
             'user_type' => $request->user_type ?? 'student',
             'level' => 0,
             'points' => 0,
@@ -57,32 +62,67 @@ class AuthController extends Controller
             'confirmed' => $request->has('confirmed') ? (bool)$request->confirmed : false,
             'current_streak' => 0,
             'max_streak' => 0,
+            'total_tasks_completed' => 0,
+            'total_lessons_completed' => 0,
+            'total_pieces_completed' => 0,
+            'total_modules_completed' => 0,
+            'failed_login_attempts' => 0,
         ];
 
-        // Добавляем необязательные поля только если они есть в запросе
-        $optionalFields = ['city_id', 'region_id', 'district_id', 'birth_date'];
+        // Добавляем необязательные поля (только если они есть в запросе и не null)
+        $optionalFields = [
+            'city_id',
+            'region_id',
+            'district_id',
+            'locality_id',
+            'birth_date',
+            'avatar',
+            'preferences',
+            'settings',
+            'last_login_ip',
+            'last_login_user_agent',
+        ];
+
         foreach ($optionalFields as $field) {
-            if ($request->has($field) && !is_null($request->$field)) {
+            if ($request->has($field) && !is_null($request->$field) && $request->$field !== '') {
                 $userData[$field] = $request->$field;
             }
         }
 
         // Логирование для отладки
-        \Log::info('Creating user with data:', $userData);
+        \Log::info('Registration data:', $userData);
 
-        $user = User::create($userData);
+        try {
+            $user = User::create($userData);
 
-        // Проверка сохраненных данных
-        \Log::info('User created:', $user->toArray());
+            // Проверка что сохранилось
+            $savedUser = $user->fresh();
+            \Log::info('User saved successfully:', $savedUser->toArray());
 
-        $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
+            $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Регистрация успешно завершена',
-            'user' => $user->only(['id', 'name', 'email', 'user_type', 'level', 'points', 'city_id', 'region_id', 'district_id', 'birth_date', 'confirmed']),
-            'token' => $token,
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Регистрация успешно завершена',
+                'user' => $savedUser->only([
+                    'id', 'name', 'email', 'user_type', 'level', 'points',
+                    'country_id', 'region_id', 'district_id', 'city_id', 'locality_id',
+                    'birth_date', 'school_id', 'school_class_id', 'confirmed', 'is_active'
+                ]),
+                'token' => $token,
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Log::error('User registration failed:', [
+                'error' => $e->getMessage(),
+                'data' => $userData
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при регистрации: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function login(Request $request)

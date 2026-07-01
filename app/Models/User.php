@@ -75,7 +75,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'birth_date' => 'datetime',
+            'birth_date' => 'date',
+            'confirmed' => 'boolean',
             'password' => 'hashed',
             'points' => 'integer',
             'level' => 'integer',
