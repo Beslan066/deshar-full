@@ -43,6 +43,10 @@ Route::group(['namespace' => 'Api'], function () {
         Route::get('/', [App\Http\Controllers\Api\CityController::class, 'index']);
     });
 
+    Route::group(['namespace' => 'Locality', 'prefix' => 'localities'], function () {
+        Route::get('/', [App\Http\Controllers\Api\LocalityController::class, 'index']);
+    });
+
     Route::group(['namespace' => 'School', 'prefix' => 'schools'], function () {
         Route::get('/', [App\Http\Controllers\Api\SchoolController::class, 'index']);
     });
