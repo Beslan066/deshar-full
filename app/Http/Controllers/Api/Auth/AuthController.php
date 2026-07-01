@@ -30,17 +30,17 @@ class AuthController extends Controller
             ],
             'role_id' => 'required|integer|exists:roles,id',
             'country_id' => 'required|integer|exists:countries,id',
-            'city_id' => 'nullable|integer',
-            'region_id' => 'nullable|integer',
-            'district_id' => 'nullable|integer',
-            'birth_date' => 'nullable|date',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'region_id' => 'nullable|integer|exists:regions,id',
+            'district_id' => 'nullable|integer|exists:districts,id',
+            'birth_date' => 'nullable|date|before:today',
             'user_type' => 'nullable|string',
             'confirmed' => 'nullable|boolean',
             'school_id' => 'required|integer|exists:schools,id',
-            'school_class_id' => 'required|integer',
+            'school_class_id' => 'required|integer|exists:school_classes,id',
         ]);
 
-        // Подготовка данных для создания пользователя
+        // Подготовка данных
         $userData = [
             'name' => strip_tags($request->name),
             'email' => strtolower(trim($request->email)),
@@ -49,40 +49,38 @@ class AuthController extends Controller
             'country_id' => $request->country_id,
             'school_id' => $request->school_id,
             'school_class_id' => $request->school_class_id,
-            'user_type' => $request->user_type ?? 'student', // используем из запроса или дефолт
+            'user_type' => $request->user_type ?? 'student',
             'level' => 0,
             'points' => 0,
             'is_active' => true,
-            'confirmed' => $request->confirmed ?? false,
+            'is_banned' => false,
+            'confirmed' => $request->has('confirmed') ? (bool)$request->confirmed : false,
             'current_streak' => 0,
             'max_streak' => 0,
         ];
 
-        // Добавляем необязательные поля, только если они присутствуют в запросе
-        if ($request->has('city_id')) {
-            $userData['city_id'] = $request->city_id;
+        // Добавляем необязательные поля только если они есть в запросе
+        $optionalFields = ['city_id', 'region_id', 'district_id', 'birth_date'];
+        foreach ($optionalFields as $field) {
+            if ($request->has($field) && !is_null($request->$field)) {
+                $userData[$field] = $request->$field;
+            }
         }
 
-        if ($request->has('region_id')) {
-            $userData['region_id'] = $request->region_id;
-        }
-
-        if ($request->has('district_id')) {
-            $userData['district_id'] = $request->district_id;
-        }
-
-        if ($request->has('birth_date')) {
-            $userData['birth_date'] = $request->birth_date;
-        }
+        // Логирование для отладки
+        \Log::info('Creating user with data:', $userData);
 
         $user = User::create($userData);
+
+        // Проверка сохраненных данных
+        \Log::info('User created:', $user->toArray());
 
         $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Регистрация успешно завершена',
-            'user' => $user->only(['id', 'name', 'email', 'user_type', 'level', 'points']),
+            'user' => $user->only(['id', 'name', 'email', 'user_type', 'level', 'points', 'city_id', 'region_id', 'district_id', 'birth_date', 'confirmed']),
             'token' => $token,
         ], 201);
     }
