@@ -34,6 +34,7 @@ class User extends Authenticatable
         'city_id',
         'school_id',
         'school_class_id',
+        'locality_id',
         'role_id',
         'points',
         'birth_date',
