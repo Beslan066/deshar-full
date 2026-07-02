@@ -20,7 +20,7 @@ class CityController extends Controller
             $query->where('country_id', $request->country_id);
         }
 
-        $cities = $query->paginate(10);
+        $cities = $query->get();
         return response()->json($cities);
     }
 

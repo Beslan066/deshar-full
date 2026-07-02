@@ -13,7 +13,7 @@ class DistrictController extends Controller
      */
     public function index()
     {
-        $districs = District::query()->select('id', 'name')->paginate(10);
+        $districs = District::query()->select('id', 'name')->get();
 
         return response()->json($districs);
     }

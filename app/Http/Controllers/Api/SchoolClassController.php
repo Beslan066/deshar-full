@@ -21,7 +21,7 @@ class SchoolClassController extends Controller
             $query->where('school_id', $request->school_id);
         }
 
-        $schoolClasses = $query->paginate(10);
+        $schoolClasses = $query->get();
         return response()->json($schoolClasses);
     }
 

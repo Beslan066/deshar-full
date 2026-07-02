@@ -21,7 +21,7 @@ class LocalityController extends Controller
             $query->where('district_id', $request->district_id);
         }
 
-        $localities = $query->paginate(10);
+        $localities = $query->get();
         return response()->json($localities);
     }
 

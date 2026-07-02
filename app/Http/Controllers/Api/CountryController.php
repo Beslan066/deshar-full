@@ -13,7 +13,7 @@ class CountryController extends Controller
      */
     public function index()
     {
-        $countries = Country::query()->select('id', 'name')->paginate(10);
+        $countries = Country::query()->select('id', 'name')->get();
 
         return response()->json($countries);
     }

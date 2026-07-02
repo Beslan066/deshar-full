@@ -20,7 +20,7 @@ class SchoolController extends Controller
             $query->where('locality_id', $request->locality_id);
         }
 
-        $schools = $query->paginate(10);
+        $schools = $query->get();
         return response()->json($schools);
     }
 
