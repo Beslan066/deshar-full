@@ -12,10 +12,16 @@ class LocalityController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $localities = Locality::query()->select('id', 'name')->paginate(10);
+        $query = Locality::query()->select('id', 'name', 'district_id');
 
+        // Фильтр по району
+        if ($request->has('district_id') && $request->district_id) {
+            $query->where('district_id', $request->district_id);
+        }
+
+        $localities = $query->paginate(10);
         return response()->json($localities);
     }
 

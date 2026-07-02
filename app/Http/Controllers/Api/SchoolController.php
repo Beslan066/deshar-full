@@ -13,9 +13,14 @@ class SchoolController extends Controller
      */
     public function index(Request $request)
     {
+        $query = School::query()->select('id', 'name', 'locality_id');
 
-        $schools = School::query()->select('id', 'name')->paginate(10);
+        // Фильтр по населенному пункту
+        if ($request->has('locality_id') && $request->locality_id) {
+            $query->where('locality_id', $request->locality_id);
+        }
 
+        $schools = $query->paginate(10);
         return response()->json($schools);
     }
 

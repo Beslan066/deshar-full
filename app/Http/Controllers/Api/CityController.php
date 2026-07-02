@@ -11,10 +11,16 @@ class CityController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $cities = City::query()->select('id', 'name')->paginate(10);
+        $query = City::query()->select('id', 'name', 'country_id');
 
+        // Фильтр по району
+        if ($request->has('country_id') && $request->country_id) {
+            $query->where('country_id', $request->country_id);
+        }
+
+        $cities = $query->paginate(10);
         return response()->json($cities);
     }
 

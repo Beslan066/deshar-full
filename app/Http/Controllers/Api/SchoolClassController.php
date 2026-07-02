@@ -14,9 +14,14 @@ class SchoolClassController extends Controller
      */
     public function index(Request $request)
     {
+        $query = SchoolClass::query()->select('id', 'name', 'school_id');
 
-        $schoolClasses = SchoolClass::query()->select('id', 'name')->paginate(10);
+        // Фильтр по школе
+        if ($request->has('school_id') && $request->school_id) {
+            $query->where('school_id', $request->school_id);
+        }
 
+        $schoolClasses = $query->paginate(10);
         return response()->json($schoolClasses);
     }
 
