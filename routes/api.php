@@ -54,6 +54,10 @@ Route::group(['namespace' => 'Api'], function () {
     Route::group(['namespace' => 'SchoolClass', 'prefix' => 'school-classes'], function () {
         Route::get('/', [App\Http\Controllers\Api\SchoolClassController::class, 'index']);
     });
+
+    Route::group(['namespace' => 'Region', 'prefix' => 'regions'], function () {
+        Route::get('/', [App\Http\Controllers\Api\RegionController::class, 'index']);
+    });
 });
 
 
