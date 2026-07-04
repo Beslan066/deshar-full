@@ -27,6 +27,9 @@ class UserProgressResource extends JsonResource
         ];
     }
 
+    /**
+     * Получить общую статистику прогресса
+     */
     private function getProgressStats(): array
     {
         $totalModules = EducationModule::count();
@@ -76,9 +79,12 @@ class UserProgressResource extends JsonResource
         ];
     }
 
+    /**
+     * Получить все модули с прогрессом
+     */
     private function getModulesWithProgress(): array
     {
-        // УБИРАЕМ сортировку по order
+        // Загружаем все модули
         $modules = EducationModule::with([
             'pieces' => function ($query) {
                 $query->with([
@@ -86,11 +92,8 @@ class UserProgressResource extends JsonResource
                         $query->with(['tasks']);
                     }
                 ]);
-                // Если колонка order есть в таблице education_module_pieces - оставляем
-                // если нет - убираем
-                // $query->orderBy('order');
             }
-        ])->get(); // Убираем orderBy('order')
+        ])->get();
 
         $result = [];
 
@@ -292,6 +295,9 @@ class UserProgressResource extends JsonResource
         return $result;
     }
 
+    /**
+     * Получить прогресс модуля
+     */
     private function getModuleProgress(int $moduleId)
     {
         return $this->moduleProgress()
@@ -299,6 +305,9 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
+    /**
+     * Получить прогресс части
+     */
     private function getPieceProgress(int $pieceId)
     {
         return $this->pieceProgress()
@@ -306,6 +315,9 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
+    /**
+     * Получить прогресс урока
+     */
     private function getLessonProgress(int $lessonId)
     {
         return $this->lessonProgress()
@@ -313,6 +325,9 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
+    /**
+     * Получить прогресс задания
+     */
     private function getTaskProgress(int $taskId)
     {
         return $this->taskProgress()
@@ -320,15 +335,19 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
+    /**
+     * Проверить, заблокирован ли модуль
+     */
     private function isModuleLocked($module): bool
     {
-        // Если нет поля requires_previous в модели, возвращаем false
+        // Если нет поля requires_previous или оно false - не блокируем
         if (!isset($module->requires_previous) || !$module->requires_previous) {
             return false;
         }
 
-        // Проверяем завершение предыдущего модуля
+        // Находим предыдущий модуль по ID (если нет order)
         $previousModule = EducationModule::where('id', '<', $module->id)
+            ->orderBy('id', 'desc')
             ->first();
 
         if (!$previousModule) {
@@ -343,11 +362,15 @@ class UserProgressResource extends JsonResource
             $previousProgress->status !== UserModuleProgress::STATUS_COMPLETED;
     }
 
+    /**
+     * Проверить, заблокирована ли часть
+     */
     private function isPieceLocked($piece): bool
     {
-        // Проверяем, завершена ли предыдущая часть
+        // Находим предыдущую часть по ID (если нет order)
         $previousPiece = EducationModulePiece::where('module_id', $piece->module_id)
             ->where('id', '<', $piece->id)
+            ->orderBy('id', 'desc')
             ->first();
 
         if (!$previousPiece) {
@@ -362,6 +385,9 @@ class UserProgressResource extends JsonResource
             $previousProgress->status !== UserPieceProgress::STATUS_COMPLETED;
     }
 
+    /**
+     * Рассчитать общий процент завершения
+     */
     private function calculateOverallCompletionRate(): float
     {
         $totalModules = EducationModule::count();
@@ -374,6 +400,9 @@ class UserProgressResource extends JsonResource
         return round(($completedModules / $totalModules) * 100, 2);
     }
 
+    /**
+     * Получить метрики
+     */
     private function getMetrics(): array
     {
         return [
@@ -392,6 +421,9 @@ class UserProgressResource extends JsonResource
         ];
     }
 
+    /**
+     * Рассчитать средний балл
+     */
     private function calculateAverageScore(): float
     {
         $scores = $this->taskProgress()
@@ -405,6 +437,9 @@ class UserProgressResource extends JsonResource
         return round($scores->avg(), 2);
     }
 
+    /**
+     * Рассчитать общее время
+     */
     private function calculateTotalTimeSpent(): int
     {
         $taskTime = $this->taskProgress()->sum('time_spent');
@@ -415,6 +450,9 @@ class UserProgressResource extends JsonResource
         return $taskTime + $lessonTime + $pieceTime + $moduleTime;
     }
 
+    /**
+     * Получить рекомендованные модули
+     */
     private function getRecommendedModules(int $limit = 3): array
     {
         $completedModuleIds = $this->moduleProgress()
@@ -446,6 +484,9 @@ class UserProgressResource extends JsonResource
         })->toArray();
     }
 
+    /**
+     * Получить недавние достижения
+     */
     private function getRecentAchievements(int $limit = 5): array
     {
         $achievements = [];
@@ -455,6 +496,7 @@ class UserProgressResource extends JsonResource
         $currentStreak = $this->current_streak ?? 0;
         $level = $this->level ?? 0;
 
+        // Достижения за задания
         if ($completedTasks >= 10) {
             $achievements[] = [
                 'name' => 'Первые шаги',
@@ -462,7 +504,6 @@ class UserProgressResource extends JsonResource
                 'icon' => '🎯',
                 'type' => 'tasks',
                 'progress' => min(100, ($completedTasks / 10) * 100),
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
@@ -474,7 +515,6 @@ class UserProgressResource extends JsonResource
                 'icon' => '📚',
                 'type' => 'tasks',
                 'progress' => min(100, ($completedTasks / 50) * 100),
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
@@ -486,11 +526,11 @@ class UserProgressResource extends JsonResource
                 'icon' => '💪',
                 'type' => 'tasks',
                 'progress' => 100,
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
 
+        // Достижения за уроки
         if ($completedLessons >= 5) {
             $achievements[] = [
                 'name' => 'Исследователь',
@@ -498,11 +538,22 @@ class UserProgressResource extends JsonResource
                 'icon' => '🔍',
                 'type' => 'lessons',
                 'progress' => min(100, ($completedLessons / 5) * 100),
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
 
+        if ($completedLessons >= 20) {
+            $achievements[] = [
+                'name' => 'Эрудит',
+                'description' => 'Завершено 20 уроков',
+                'icon' => '🧠',
+                'type' => 'lessons',
+                'progress' => min(100, ($completedLessons / 20) * 100),
+                'is_earned' => true,
+            ];
+        }
+
+        // Достижения за стрик
         if ($currentStreak >= 7) {
             $achievements[] = [
                 'name' => 'Недельный стрик',
@@ -510,7 +561,6 @@ class UserProgressResource extends JsonResource
                 'icon' => '🔥',
                 'type' => 'streak',
                 'progress' => min(100, ($currentStreak / 7) * 100),
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
@@ -522,11 +572,11 @@ class UserProgressResource extends JsonResource
                 'icon' => '⚡',
                 'type' => 'streak',
                 'progress' => 100,
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
 
+        // Достижения за уровень
         if ($level >= 3) {
             $achievements[] = [
                 'name' => 'Знаток',
@@ -534,7 +584,6 @@ class UserProgressResource extends JsonResource
                 'icon' => '⭐',
                 'type' => 'level',
                 'progress' => min(100, ($level / 3) * 100),
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
@@ -546,11 +595,22 @@ class UserProgressResource extends JsonResource
                 'icon' => '🏆',
                 'type' => 'level',
                 'progress' => 100,
-                'earned_at' => now()->toISOString(),
                 'is_earned' => true,
             ];
         }
 
+        if ($level >= 10) {
+            $achievements[] = [
+                'name' => 'Легенда',
+                'description' => 'Достигнут 10 уровень',
+                'icon' => '👑',
+                'type' => 'level',
+                'progress' => 100,
+                'is_earned' => true,
+            ];
+        }
+
+        // Сортируем по прогрессу (завершенные вначале)
         usort($achievements, function ($a, $b) {
             return $b['progress'] <=> $a['progress'];
         });
