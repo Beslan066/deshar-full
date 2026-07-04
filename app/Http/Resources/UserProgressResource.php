@@ -15,37 +15,18 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserProgressResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            // Базовая информация о пользователе (используем существующий ApiUserResource)
             'user' => new ApiUserResource($this),
-
-            // Общая статистика прогресса
             'stats' => $this->getProgressStats(),
-
-            // Детальный прогресс по модулям
             'modules' => $this->getModulesWithProgress(),
-
-            // Метрики
             'metrics' => $this->getMetrics(),
-
-            // Рекомендации
             'recommended_modules' => $this->getRecommendedModules(),
-
-            // Недавние достижения
             'recent_achievements' => $this->getRecentAchievements(),
         ];
     }
 
-    /**
-     * Получить общую статистику прогресса
-     */
     private function getProgressStats(): array
     {
         $totalModules = EducationModule::count();
@@ -95,23 +76,21 @@ class UserProgressResource extends JsonResource
         ];
     }
 
-    /**
-     * Получить все модули с прогрессом пользователя
-     */
     private function getModulesWithProgress(): array
     {
-        // Загружаем все модули с их структурой
+        // УБИРАЕМ сортировку по order
         $modules = EducationModule::with([
             'pieces' => function ($query) {
                 $query->with([
                     'lessons' => function ($query) {
-                        $query->with([
-                            'tasks'
-                        ])->orderBy('order');
+                        $query->with(['tasks']);
                     }
-                ])->orderBy('order');
+                ]);
+                // Если колонка order есть в таблице education_module_pieces - оставляем
+                // если нет - убираем
+                // $query->orderBy('order');
             }
-        ])->orderBy('order')->get();
+        ])->get(); // Убираем orderBy('order')
 
         $result = [];
 
@@ -152,10 +131,8 @@ class UserProgressResource extends JsonResource
                         $tasks[] = [
                             'id' => $task->id,
                             'name' => $task->name,
-                            'type' => $task->type,
+                            'type' => $task->type ?? 'default',
                             'complexity' => $task->complexity ?? 1,
-                            'order' => $task->order ?? 0,
-                            'is_required' => $task->is_required ?? true,
                             'progress' => $taskProgress ? [
                                 'status' => $taskProgress->status,
                                 'is_completed' => $isCompleted,
@@ -193,7 +170,6 @@ class UserProgressResource extends JsonResource
                         'id' => $lesson->id,
                         'name' => $lesson->name,
                         'description' => $lesson->description,
-                        'order' => $lesson->order,
                         'type' => $lesson->type ?? 'regular',
                         'progress' => $lessonProgress ? [
                             'status' => $lessonProgress->status,
@@ -232,9 +208,8 @@ class UserProgressResource extends JsonResource
                     'id' => $piece->id,
                     'name' => $piece->name,
                     'description' => $piece->description,
-                    'image' => $piece->image,
-                    'fon' => $piece->fon,
-                    'order' => $piece->order,
+                    'image' => $piece->image ?? null,
+                    'fon' => $piece->fon ?? null,
                     'type' => $piece->type ?? 'regular',
                     'is_locked' => $this->isPieceLocked($piece),
                     'progress' => $pieceProgress ? [
@@ -275,9 +250,8 @@ class UserProgressResource extends JsonResource
                 'id' => $module->id,
                 'name' => $module->name,
                 'description' => $module->description,
-                'image' => $module->image,
-                'complexity' => $module->complexity,
-                'order' => $module->order,
+                'image' => $module->image ?? null,
+                'complexity' => $module->complexity ?? 1,
                 'is_locked' => $this->isModuleLocked($module),
                 'progress' => $moduleProgress ? [
                     'status' => $moduleProgress->status,
@@ -318,9 +292,6 @@ class UserProgressResource extends JsonResource
         return $result;
     }
 
-    /**
-     * Получить прогресс модуля
-     */
     private function getModuleProgress(int $moduleId)
     {
         return $this->moduleProgress()
@@ -328,9 +299,6 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
-    /**
-     * Получить прогресс части
-     */
     private function getPieceProgress(int $pieceId)
     {
         return $this->pieceProgress()
@@ -338,9 +306,6 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
-    /**
-     * Получить прогресс урока
-     */
     private function getLessonProgress(int $lessonId)
     {
         return $this->lessonProgress()
@@ -348,9 +313,6 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
-    /**
-     * Получить прогресс задания
-     */
     private function getTaskProgress(int $taskId)
     {
         return $this->taskProgress()
@@ -358,19 +320,15 @@ class UserProgressResource extends JsonResource
             ->first();
     }
 
-    /**
-     * Проверить, заблокирован ли модуль
-     */
     private function isModuleLocked($module): bool
     {
-        // Если нет требования к предыдущему модулю - не блокируем
-        if (!$module->requires_previous) {
+        // Если нет поля requires_previous в модели, возвращаем false
+        if (!isset($module->requires_previous) || !$module->requires_previous) {
             return false;
         }
 
         // Проверяем завершение предыдущего модуля
-        $previousModule = EducationModule::where('order', '<', $module->order)
-            ->orderBy('order', 'desc')
+        $previousModule = EducationModule::where('id', '<', $module->id)
             ->first();
 
         if (!$previousModule) {
@@ -385,15 +343,11 @@ class UserProgressResource extends JsonResource
             $previousProgress->status !== UserModuleProgress::STATUS_COMPLETED;
     }
 
-    /**
-     * Проверить, заблокирована ли часть
-     */
     private function isPieceLocked($piece): bool
     {
         // Проверяем, завершена ли предыдущая часть
         $previousPiece = EducationModulePiece::where('module_id', $piece->module_id)
-            ->where('order', '<', $piece->order)
-            ->orderBy('order', 'desc')
+            ->where('id', '<', $piece->id)
             ->first();
 
         if (!$previousPiece) {
@@ -408,9 +362,6 @@ class UserProgressResource extends JsonResource
             $previousProgress->status !== UserPieceProgress::STATUS_COMPLETED;
     }
 
-    /**
-     * Рассчитать общий процент завершения
-     */
     private function calculateOverallCompletionRate(): float
     {
         $totalModules = EducationModule::count();
@@ -423,9 +374,6 @@ class UserProgressResource extends JsonResource
         return round(($completedModules / $totalModules) * 100, 2);
     }
 
-    /**
-     * Получить метрики
-     */
     private function getMetrics(): array
     {
         return [
@@ -444,9 +392,6 @@ class UserProgressResource extends JsonResource
         ];
     }
 
-    /**
-     * Рассчитать средний балл
-     */
     private function calculateAverageScore(): float
     {
         $scores = $this->taskProgress()
@@ -460,9 +405,6 @@ class UserProgressResource extends JsonResource
         return round($scores->avg(), 2);
     }
 
-    /**
-     * Рассчитать общее время
-     */
     private function calculateTotalTimeSpent(): int
     {
         $taskTime = $this->taskProgress()->sum('time_spent');
@@ -473,9 +415,6 @@ class UserProgressResource extends JsonResource
         return $taskTime + $lessonTime + $pieceTime + $moduleTime;
     }
 
-    /**
-     * Получить рекомендованные модули
-     */
     private function getRecommendedModules(int $limit = 3): array
     {
         $completedModuleIds = $this->moduleProgress()
@@ -483,7 +422,6 @@ class UserProgressResource extends JsonResource
             ->pluck('module_id')
             ->toArray();
 
-        // Также исключаем модули, которые уже начаты
         $inProgressModuleIds = $this->moduleProgress()
             ->where('status', UserModuleProgress::STATUS_IN_PROGRESS)
             ->pluck('module_id')
@@ -492,7 +430,6 @@ class UserProgressResource extends JsonResource
         $excludeIds = array_merge($completedModuleIds, $inProgressModuleIds);
 
         $recommended = EducationModule::whereNotIn('id', $excludeIds)
-            ->orderBy('complexity')
             ->limit($limit)
             ->get();
 
@@ -501,22 +438,18 @@ class UserProgressResource extends JsonResource
                 'id' => $module->id,
                 'name' => $module->name,
                 'description' => $module->description,
-                'image' => $module->image,
-                'complexity' => $module->complexity,
+                'image' => $module->image ?? null,
+                'complexity' => $module->complexity ?? 1,
                 'total_lessons' => $module->lessons()->count(),
                 'total_pieces' => $module->pieces()->count(),
             ];
         })->toArray();
     }
 
-    /**
-     * Получить недавние достижения
-     */
     private function getRecentAchievements(int $limit = 5): array
     {
         $achievements = [];
 
-        // Проверяем различные достижения
         $completedTasks = $this->completedTasks()->count();
         $completedLessons = $this->completedLessons()->count();
         $currentStreak = $this->current_streak ?? 0;
@@ -618,7 +551,6 @@ class UserProgressResource extends JsonResource
             ];
         }
 
-        // Сортируем по прогрессу (сначала завершенные)
         usort($achievements, function ($a, $b) {
             return $b['progress'] <=> $a['progress'];
         });
