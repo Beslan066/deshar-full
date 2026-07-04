@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserProgressResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -200,13 +201,55 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Используем новый ресурс с прогрессом
+        return new UserProgressResource($user);
+    }
+
+    /**
+     * Получить только основную информацию (без прогресса)
+     */
+    public function profile(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        return new UserResource($user);
+    }
+
+    /**
+     * Получить только прогресс (без личной информации)
+     */
+    public function progress(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
         return response()->json([
             'success' => true,
-            'user' => $user->only([
-                'id', 'name', 'email', 'avatar', 'user_type',
-                'level', 'points', 'current_streak', 'max_streak',
-                'is_active', 'is_banned', 'last_activity_at'
-            ]),
+            'data' => [
+                'stats' => $user->getStats()['progress'],
+                'modules' => (new UserProgressResource($user))->getModulesWithProgress(),
+                'recent_achievements' => $user->getRecentAchievements(),
+            ]
         ]);
     }
 
