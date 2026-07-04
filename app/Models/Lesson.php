@@ -21,6 +21,9 @@ class Lesson extends Model
         'xp_reward',
         'estimated_time',
         'metadata',
+        'audio',
+        'video',
+        'image'
     ];
 
     /*

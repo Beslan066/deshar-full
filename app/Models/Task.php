@@ -25,6 +25,9 @@ class Task extends Model
         'is_published',
         'is_required',
         'metadata',
+        'audio',
+        'video',
+        'image'
     ];
 
     protected $casts = [

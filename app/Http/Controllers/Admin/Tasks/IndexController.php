@@ -47,15 +47,13 @@ class IndexController extends Controller
 
     public function store(Request $request)
     {
-
-
         $request->validate([
             'lesson_id' => 'required|exists:lessons,id',
             'task_type_id' => 'required|exists:task_types,id',
             'sort_order' => 'nullable|integer|min:0',
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'config' => 'required|array', // ← Ожидаем массив
+            'config' => 'nullable|string',
             'max_attempts' => 'nullable|integer|min:1',
             'time_limit_seconds' => 'nullable|integer|min:0',
             'xp_reward' => 'nullable|integer|min:0',
@@ -63,18 +61,15 @@ class IndexController extends Controller
             'is_published' => 'nullable|boolean',
             'is_required' => 'nullable|boolean',
             // Медиа
-            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
-            'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+            'audio' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
+            'video' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
         ]);
 
-
-
-        //  ПРЕОБРАЗУЕМ CONFIG В МАССИВ
+        // ПРЕОБРАЗУЕМ CONFIG В МАССИВ
         $configData = $request->input('config');
 
-        // Если config пришел как JSON строка - парсим
-        if (is_string($configData)) {
+        if (is_string($configData) && !empty($configData)) {
             $configData = json_decode($configData, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return redirect()
@@ -82,9 +77,10 @@ class IndexController extends Controller
                     ->withErrors(['config' => 'Неверный формат JSON в конфигурации'])
                     ->withInput();
             }
+        } elseif (empty($configData)) {
+            $configData = [];
         }
 
-        // Если config пришел как массив с ключами, но значения могут быть строками JSON
         if (is_array($configData)) {
             foreach ($configData as $key => $value) {
                 if (is_string($value) && $this->isJson($value)) {
@@ -97,12 +93,11 @@ class IndexController extends Controller
         $taskType = TaskType::find($request->task_type_id);
         $validatedConfig = $this->configValidator->validate($configData, $taskType->slug);
 
-        $data = $request->all();
+        $data = $request->except(['config', 'audio', 'image', 'video']);
         $data['config'] = $validatedConfig;
         $data['is_published'] = $request->has('is_published') ? true : false;
         $data['is_required'] = $request->has('is_required') ? true : false;
 
-        // Обработка подсказок
         if ($request->has('hints')) {
             $data['hints'] = array_filter($request->hints, function ($hint) {
                 return !empty($hint);
@@ -110,25 +105,34 @@ class IndexController extends Controller
         }
 
         // ============================================================
-        // ОБРАБОТКА МЕДИАФАЙЛОВ
+        // ОБРАБОТКА МЕДИАФАЙЛОВ - СОХРАНЯЕМ В ОТДЕЛЬНЫЕ ПОЛЯ
         // ============================================================
 
-        // Аудио
-        if ($request->hasFile('audio_file')) {
-            $path = $request->file('audio_file')->store('tasks/audio', 'public');
-            $data['config']['audio_url'] = '/storage/' . $path;
+        // Аудио - сохраняем путь в поле audio
+        if ($request->hasFile('audio')) {
+            $file = $request->file('audio');
+            if ($file->isValid()) {
+                $path = $file->store('tasks/audio', 'public');
+                $data['audio'] = $path; // Сохраняем путь в отдельное поле
+            }
         }
 
-        // Изображение
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('tasks/images', 'public');
-            $data['config']['image_url'] = '/storage/' . $path;
+        // Изображение - сохраняем путь в поле image
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            if ($file->isValid()) {
+                $path = $file->store('tasks/images', 'public');
+                $data['image'] = $path; // Сохраняем путь в отдельное поле
+            }
         }
 
-        // Видео
-        if ($request->hasFile('video_file')) {
-            $path = $request->file('video_file')->store('tasks/videos', 'public');
-            $data['config']['video_url'] = '/storage/' . $path;
+        // Видео - сохраняем путь в поле video
+        if ($request->hasFile('video')) {
+            $file = $request->file('video');
+            if ($file->isValid()) {
+                $path = $file->store('tasks/videos', 'public');
+                $data['video'] = $path; // Сохраняем путь в отдельное поле
+            }
         }
 
         $task = Task::create($data);
@@ -154,7 +158,7 @@ class IndexController extends Controller
             'sort_order' => 'nullable|integer|min:0',
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'config' => 'required|array',
+            'config' => 'nullable|string',
             'max_attempts' => 'nullable|integer|min:1',
             'time_limit_seconds' => 'nullable|integer|min:0',
             'xp_reward' => 'nullable|integer|min:0',
@@ -162,15 +166,15 @@ class IndexController extends Controller
             'is_published' => 'nullable|boolean',
             'is_required' => 'nullable|boolean',
             // Медиа
-            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
-            'video_file' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+            'audio' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
+            'video' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
         ]);
 
-        //  ПРЕОБРАЗУЕМ CONFIG В МАССИВ
+        // ПРЕОБРАЗУЕМ CONFIG В МАССИВ
         $configData = $request->input('config');
 
-        if (is_string($configData)) {
+        if (is_string($configData) && !empty($configData)) {
             $configData = json_decode($configData, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return redirect()
@@ -178,6 +182,8 @@ class IndexController extends Controller
                     ->withErrors(['config' => 'Неверный формат JSON в конфигурации'])
                     ->withInput();
             }
+        } elseif (empty($configData)) {
+            $configData = [];
         }
 
         if (is_array($configData)) {
@@ -192,7 +198,7 @@ class IndexController extends Controller
         $taskType = TaskType::find($request->task_type_id);
         $validatedConfig = $this->configValidator->validate($configData, $taskType->slug);
 
-        $data = $request->all();
+        $data = $request->except(['config', 'audio', 'image', 'video']);
         $data['config'] = $validatedConfig;
         $data['is_published'] = $request->has('is_published') ? true : false;
         $data['is_required'] = $request->has('is_required') ? true : false;
@@ -208,39 +214,43 @@ class IndexController extends Controller
         // ============================================================
 
         // Аудио
-        if ($request->hasFile('audio_file')) {
-            if (isset($task->config['audio_url'])) {
-                $oldPath = str_replace('/storage/', '', $task->config['audio_url']);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
+        if ($request->hasFile('audio')) {
+            // Удаляем старый файл
+            if ($task->audio) {
+                Storage::disk('public')->delete($task->audio);
             }
-            $path = $request->file('audio_file')->store('tasks/audio', 'public');
-            $data['config']['audio_url'] = '/storage/' . $path;
+
+            $file = $request->file('audio');
+            if ($file->isValid()) {
+                $path = $file->store('tasks/audio', 'public');
+                $data['audio'] = $path;
+            }
         }
 
         // Изображение
-        if ($request->hasFile('image_file')) {
-            if (isset($task->config['image_url'])) {
-                $oldPath = str_replace('/storage/', '', $task->config['image_url']);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
+        if ($request->hasFile('image')) {
+            if ($task->image) {
+                Storage::disk('public')->delete($task->image);
             }
-            $path = $request->file('image_file')->store('tasks/images', 'public');
-            $data['config']['image_url'] = '/storage/' . $path;
+
+            $file = $request->file('image');
+            if ($file->isValid()) {
+                $path = $file->store('tasks/images', 'public');
+                $data['image'] = $path;
+            }
         }
 
         // Видео
-        if ($request->hasFile('video_file')) {
-            if (isset($task->config['video_url'])) {
-                $oldPath = str_replace('/storage/', '', $task->config['video_url']);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
+        if ($request->hasFile('video')) {
+            if ($task->video) {
+                Storage::disk('public')->delete($task->video);
             }
-            $path = $request->file('video_file')->store('tasks/videos', 'public');
-            $data['config']['video_url'] = '/storage/' . $path;
+
+            $file = $request->file('video');
+            if ($file->isValid()) {
+                $path = $file->store('tasks/videos', 'public');
+                $data['video'] = $path;
+            }
         }
 
         $task->update($data);

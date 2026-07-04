@@ -54,7 +54,8 @@ class User extends Authenticatable
         'is_banned',
         'banned_until',
         'ban_reason',
-        'confirmed'
+        'confirmed',
+        'school_class_type_id'
         ];
 
     /**
@@ -147,6 +148,11 @@ class User extends Authenticatable
     public function schoolClass()
     {
         return $this->belongsTo(SchoolClass::class, 'school_class_id');
+    }
+
+    public function schoolClassType()
+    {
+        return $this->belongsTo(SchoolClass::class, 'school_class_type_id');
     }
 
     /**

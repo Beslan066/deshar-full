@@ -144,8 +144,8 @@
                                                     <i class="bx bx-music me-1"></i> Аудио
                                                 </label>
                                                 <input type="file" id="audio_file" class="form-control @error('audio_file') is-invalid @enderror"
-                                                       name="audio_file" accept="audio/*">
-                                                @error('audio_file')
+                                                       name="audio" accept="audio/*">
+                                                @error('audio')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                                 <small class="text-muted">MP3, WAV, OGG. Макс. 10MB</small>
@@ -167,8 +167,8 @@
                                                     <i class="bx bx-image me-1"></i> Изображение
                                                 </label>
                                                 <input type="file" id="image_file" class="form-control @error('image_file') is-invalid @enderror"
-                                                       name="image_file" accept="image/*">
-                                                @error('image_file')
+                                                       name="image" accept="image/*">
+                                                @error('image')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                                 <small class="text-muted">JPG, PNG, GIF, WebP. Макс. 5MB</small>
@@ -184,12 +184,12 @@
                                         {{-- ВИДЕО --}}
                                         <div class="col-md-4">
                                             <div class="mb-3">
-                                                <label for="video_file" class="form-label">
+                                                <label for="video" class="form-label">
                                                     <i class="bx bx-video me-1"></i> Видео
                                                 </label>
                                                 <input type="file" id="video_file" class="form-control @error('video_file') is-invalid @enderror"
-                                                       name="video_file" accept="video/*">
-                                                @error('video_file')
+                                                       name="video" accept="video/*">
+                                                @error('video')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                                 <small class="text-muted">MP4, WebM, OGG. Макс. 50MB</small>

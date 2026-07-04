@@ -21,7 +21,7 @@
                     </div>
                 @endif
 
-                <form class="card-body" action="{{ route('admin.lessons.store') }}" method="POST">
+                <form class="card-body" action="{{ route('admin.lessons.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="row g-6">
@@ -93,14 +93,75 @@
                         </div>
 
                         {{-- ОПИСАНИЕ --}}
+                        {{-- Вместо textarea --}}
                         <div class="col-12">
-                            <div class="form-floating form-floating-outline mb-4">
-                            <textarea id="description" class="form-control @error('description') is-invalid @enderror"
-                                      placeholder="Описание урока" name="description" rows="3">{{ old('description') }}</textarea>
-                                <label for="description">Описание</label>
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Описание</label>
+                                <div id="editor" style="height: 300px;">{!! old('description') !!}</div>
+                                <textarea id="description" name="description" style="display:none;">{{ old('description') }}</textarea>
                                 @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+                        </div>
+
+
+
+                        {{-- МЕДИАФАЙЛЫ (АУДИО, ФОТО, ВИДЕО) --}}
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Медиафайлы для урока</h6>
+                                    <small class="text-muted">Добавьте аудио, изображение или видео для урока</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-4">
+                                        {{-- АУДИО --}}
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="audio" class="form-label">
+                                                    <i class="bx bx-music me-1"></i> Аудио
+                                                </label>
+                                                <input type="file" id="audio" class="form-control @error('audio') is-invalid @enderror"
+                                                       name="audio" accept="audio/*">
+                                                @error('audio')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">MP3, WAV, OGG. Макс. 10MB</small>
+                                            </div>
+                                        </div>
+
+                                        {{-- ФОТО --}}
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="image" class="form-label">
+                                                    <i class="bx bx-image me-1"></i> Изображение
+                                                </label>
+                                                <input type="file" id="image" class="form-control @error('image') is-invalid @enderror"
+                                                       name="image" accept="image/*">
+                                                @error('image')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">JPG, PNG, GIF, WebP. Макс. 5MB</small>
+                                            </div>
+                                        </div>
+
+                                        {{-- ВИДЕО --}}
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="video" class="form-label">
+                                                    <i class="bx bx-video me-1"></i> Видео
+                                                </label>
+                                                <input type="file" id="video" class="form-control @error('video') is-invalid @enderror"
+                                                       name="video" accept="video/*">
+                                                @error('video')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">MP4, WebM, OGG. Макс. 50MB</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -133,3 +194,43 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var quill = new Quill('#editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Обновляем textarea при каждом изменении в редакторе
+            quill.on('text-change', function() {
+                var html = quill.root.innerHTML;
+                document.querySelector('#description').value = html;
+            });
+
+            // Также обновляем при отправке формы
+            document.querySelector('form').addEventListener('submit', function() {
+                var html = quill.root.innerHTML;
+                document.querySelector('#description').value = html;
+            });
+
+            // Если есть старое значение - устанавливаем его в редактор
+            var oldDescription = document.querySelector('#description').value;
+            if (oldDescription) {
+                quill.root.innerHTML = oldDescription;
+            }
+        });
+    </script>
+@endpush
