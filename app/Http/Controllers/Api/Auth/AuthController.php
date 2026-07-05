@@ -208,7 +208,6 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Используем новый ресурс с прогрессом
         return new UserProgressResource($user);
     }
 
