@@ -2,6 +2,7 @@
 // routes/api.php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Frontend\Student\EducationModuleController;
 use Illuminate\Support\Facades\Route;
 
 // Публичные маршруты с ограничением по частоте
@@ -74,20 +75,18 @@ Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () 
 
 
     //  МАРШРУТЫ ДЛЯ ОБРАЗОВАТЕЛЬНЫХ МОДУЛЕЙ
-    Route::group(['prefix' => 'modules'], function () {
-        // Получить все модули для класса ученика
-        Route::get('/', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'index']);
+    Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () {
+        Route::group(['prefix' => 'modules'], function () {
+            // 1. Конкретные маршруты (без параметров)
+            Route::get('/progress', [EducationModuleController::class, 'progress']);
+            Route::get('/recommended', [EducationModuleController::class, 'recommended']);
 
-        // Получить конкретный модуль с детальным прогрессом
-        Route::get('/{module}', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'show']);
+            // 2. Маршруты с параметрами
+            Route::get('/{module}/progress', [EducationModuleController::class, 'moduleProgress']);
+            Route::get('/{module}', [EducationModuleController::class, 'show']);
 
-        // Получить прогресс по всем модулям
-        Route::get('/progress', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'progress']);
-
-        // Получить прогресс по конкретному модулю
-        Route::get('/{module}/progress', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'moduleProgress']);
-
-        // Получить рекомендованные модули
-        Route::get('/recommended', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'recommended']);
+            // 3. Маршрут для списка (должен быть последним)
+            Route::get('/', [EducationModuleController::class, 'index']);
+        });
     });
 });
