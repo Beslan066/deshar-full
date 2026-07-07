@@ -43,10 +43,15 @@ class EducationModuleController extends Controller
                 ->where('module_id', $module->id)
                 ->first();
 
-            // Считаем количество уроков через связи
+            // Считаем количество уроков через разделы
             $totalLessons = 0;
+            $totalTasks = 0;
             foreach ($module->pieces as $piece) {
                 $totalLessons += $piece->lessons()->count();
+                // Считаем задачи через уроки
+                foreach ($piece->lessons as $lesson) {
+                    $totalTasks += $lesson->tasks()->count();
+                }
             }
 
             return [
@@ -59,7 +64,7 @@ class EducationModuleController extends Controller
                 'total_xp_reward' => $module->total_xp_reward,
                 'total_pieces' => $module->pieces()->count(),
                 'total_lessons' => $totalLessons,
-                'total_tasks' => $module->tasks()->count(),
+                'total_tasks' => $totalTasks,
                 'progress' => $progress ? [
                     'status' => $progress->status,
                     'progress_percentage' => $progress->progress_percentage,
@@ -115,6 +120,9 @@ class EducationModuleController extends Controller
 
         // Собираем данные по разделам
         $piecesWithProgress = [];
+        $totalLessons = 0;
+        $totalTasks = 0;
+
         foreach ($module->pieces as $piece) {
             $pieceProgress = $user->pieceProgress()
                 ->where('piece_id', $piece->id)
@@ -123,16 +131,22 @@ class EducationModuleController extends Controller
             // Получаем уроки для раздела
             $lessons = $piece->lessons()->orderBy('sort_order')->get();
             $lessonsWithProgress = [];
+            $totalLessons += count($lessons);
 
             foreach ($lessons as $lesson) {
                 $lessonProgress = $user->lessonProgress()
                     ->where('lesson_id', $lesson->id)
                     ->first();
 
+                // Получаем задачи для урока
+                $tasks = $lesson->tasks()->orderBy('sort_order')->get();
+                $totalTasks += count($tasks);
+
                 $lessonsWithProgress[] = [
                     'id' => $lesson->id,
                     'name' => $lesson->name,
                     'sort_order' => $lesson->sort_order,
+                    'total_tasks' => count($tasks),
                     'progress' => $lessonProgress ? [
                         'status' => $lessonProgress->status,
                         'progress_percentage' => $lessonProgress->progress_percentage,
@@ -172,12 +186,6 @@ class EducationModuleController extends Controller
             ];
         }
 
-        // Считаем общее количество уроков
-        $totalLessons = 0;
-        foreach ($module->pieces as $piece) {
-            $totalLessons += $piece->lessons()->count();
-        }
-
         return response()->json([
             'success' => true,
             'module' => [
@@ -190,7 +198,7 @@ class EducationModuleController extends Controller
                 'total_xp_reward' => $module->total_xp_reward,
                 'total_pieces' => $module->pieces()->count(),
                 'total_lessons' => $totalLessons,
-                'total_tasks' => $module->tasks()->count(),
+                'total_tasks' => $totalTasks,
             ],
             'progress' => $moduleProgress ? [
                 'status' => $moduleProgress->status,
@@ -409,6 +417,16 @@ class EducationModuleController extends Controller
                 ->where('module_id', $module->id)
                 ->first();
 
+            // Считаем количество уроков и задач
+            $totalLessons = 0;
+            $totalTasks = 0;
+            foreach ($module->pieces as $piece) {
+                $totalLessons += $piece->lessons()->count();
+                foreach ($piece->lessons as $lesson) {
+                    $totalTasks += $lesson->tasks()->count();
+                }
+            }
+
             return [
                 'id' => $module->id,
                 'name' => $module->name,
@@ -418,8 +436,8 @@ class EducationModuleController extends Controller
                 'complexity' => $module->complexity,
                 'total_xp_reward' => $module->total_xp_reward,
                 'total_pieces' => $module->pieces()->count(),
-                'total_lessons' => $module->lessons()->count(),
-                'total_tasks' => $module->tasks()->count(),
+                'total_lessons' => $totalLessons,
+                'total_tasks' => $totalTasks,
                 'progress' => $progress ? [
                     'status' => $progress->status,
                     'progress_percentage' => $progress->progress_percentage,
