@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api\Frontend\Student;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Frontend\Student\EducationModuleCollection;
-use App\Http\Resources\Frontend\Student\EducationModuleDetailedResource;
 use App\Models\EducationModule;
 use App\Models\UserModuleProgress;
 use Illuminate\Http\Request;
@@ -15,52 +13,204 @@ class EducationModuleController extends Controller
     /**
      * Получить все модули для класса ученика
      */
-    public function index(Request $request): EducationModuleCollection
+    public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        // Проверяем, что пользователь - ученик
         if (!$user->isStudent()) {
-            abort(403, 'Доступ только для учеников');
+            return response()->json(['message' => 'Доступ только для учеников'], 403);
         }
 
-        // Получаем ID типа класса ученика
         $schoolClassTypeId = $user->school_class_type_id;
 
         if (!$schoolClassTypeId) {
-            return new EducationModuleCollection(collect([]));
+            return response()->json([
+                'message' => 'У ученика не указан тип класса',
+                'data' => [],
+                'meta' => ['total' => 0]
+            ]);
         }
 
-        // Получаем модули для типа класса ученика (school_class_type_id)
+        // Получаем модули для типа класса
         $modules = EducationModule::published()
             ->where('school_class_type_id', $schoolClassTypeId)
             ->ordered()
-            ->with(['pieces' => function ($query) {
-                $query->orderBy('sort_order');
-            }])
             ->get();
 
-        return new EducationModuleCollection($modules);
+        // Формируем ответ с прогрессом
+        $result = $modules->map(function ($module) use ($user) {
+            $progress = $user->moduleProgress()
+                ->where('module_id', $module->id)
+                ->first();
+
+            // Считаем количество уроков через связи
+            $totalLessons = 0;
+            foreach ($module->pieces as $piece) {
+                $totalLessons += $piece->lessons()->count();
+            }
+
+            return [
+                'id' => $module->id,
+                'name' => $module->name,
+                'slug' => $module->slug,
+                'image' => $module->image,
+                'description' => $module->description,
+                'complexity' => $module->complexity,
+                'total_xp_reward' => $module->total_xp_reward,
+                'total_pieces' => $module->pieces()->count(),
+                'total_lessons' => $totalLessons,
+                'total_tasks' => $module->tasks()->count(),
+                'progress' => $progress ? [
+                    'status' => $progress->status,
+                    'progress_percentage' => $progress->progress_percentage,
+                    'progress_formatted' => $progress->progress_formatted,
+                    'is_completed' => $progress->is_completed,
+                    'started_at' => $progress->started_at?->toISOString(),
+                    'completed_at' => $progress->completed_at?->toISOString(),
+                ] : [
+                    'status' => UserModuleProgress::STATUS_NOT_STARTED,
+                    'progress_percentage' => 0,
+                    'progress_formatted' => '0%',
+                    'is_completed' => false,
+                    'started_at' => null,
+                    'completed_at' => null,
+                ],
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+            'meta' => [
+                'total' => $result->count(),
+                'school_class_type_id' => $schoolClassTypeId,
+                'user_class_type' => $user->schoolClassType?->name ?? 'Не указан',
+            ]
+        ]);
     }
 
     /**
-     * Получить конкретный модуль с детальным прогрессом
+     * Получить детальную информацию о модуле
      */
-    public function show(Request $request, EducationModule $module): EducationModuleDetailedResource
+    public function show(Request $request, EducationModule $module): JsonResponse
     {
         $user = $request->user();
 
-        // Проверяем, что модуль опубликован
         if (!$module->is_published) {
-            abort(404, 'Модуль не опубликован');
+            return response()->json(['message' => 'Модуль не опубликован'], 404);
         }
 
-        // Проверяем, что модуль соответствует типу класса ученика
         if ($module->school_class_type_id !== $user->school_class_type_id) {
-            abort(403, 'Этот модуль не соответствует вашему классу');
+            return response()->json(['message' => 'Этот модуль не соответствует вашему классу'], 403);
         }
 
-        return new EducationModuleDetailedResource($module);
+        // Загружаем разделы
+        $module->load(['pieces' => function ($query) {
+            $query->orderBy('sort_order');
+        }]);
+
+        $moduleProgress = $user->moduleProgress()
+            ->where('module_id', $module->id)
+            ->first();
+
+        // Собираем данные по разделам
+        $piecesWithProgress = [];
+        foreach ($module->pieces as $piece) {
+            $pieceProgress = $user->pieceProgress()
+                ->where('piece_id', $piece->id)
+                ->first();
+
+            // Получаем уроки для раздела
+            $lessons = $piece->lessons()->orderBy('sort_order')->get();
+            $lessonsWithProgress = [];
+
+            foreach ($lessons as $lesson) {
+                $lessonProgress = $user->lessonProgress()
+                    ->where('lesson_id', $lesson->id)
+                    ->first();
+
+                $lessonsWithProgress[] = [
+                    'id' => $lesson->id,
+                    'name' => $lesson->name,
+                    'sort_order' => $lesson->sort_order,
+                    'progress' => $lessonProgress ? [
+                        'status' => $lessonProgress->status,
+                        'progress_percentage' => $lessonProgress->progress_percentage,
+                        'is_completed' => $lessonProgress->is_completed,
+                        'started_at' => $lessonProgress->started_at?->toISOString(),
+                        'completed_at' => $lessonProgress->completed_at?->toISOString(),
+                    ] : [
+                        'status' => 'not_started',
+                        'progress_percentage' => 0,
+                        'is_completed' => false,
+                        'started_at' => null,
+                        'completed_at' => null,
+                    ],
+                ];
+            }
+
+            $piecesWithProgress[] = [
+                'id' => $piece->id,
+                'name' => $piece->name,
+                'fon' => $piece->fon,
+                'sort_order' => $piece->sort_order,
+                'total_lessons' => count($lessons),
+                'progress' => $pieceProgress ? [
+                    'status' => $pieceProgress->status,
+                    'progress_percentage' => $pieceProgress->progress_percentage,
+                    'is_completed' => $pieceProgress->is_completed,
+                    'started_at' => $pieceProgress->started_at?->toISOString(),
+                    'completed_at' => $pieceProgress->completed_at?->toISOString(),
+                ] : [
+                    'status' => 'not_started',
+                    'progress_percentage' => 0,
+                    'is_completed' => false,
+                    'started_at' => null,
+                    'completed_at' => null,
+                ],
+                'lessons' => $lessonsWithProgress,
+            ];
+        }
+
+        // Считаем общее количество уроков
+        $totalLessons = 0;
+        foreach ($module->pieces as $piece) {
+            $totalLessons += $piece->lessons()->count();
+        }
+
+        return response()->json([
+            'success' => true,
+            'module' => [
+                'id' => $module->id,
+                'name' => $module->name,
+                'slug' => $module->slug,
+                'image' => $module->image,
+                'description' => $module->description,
+                'complexity' => $module->complexity,
+                'total_xp_reward' => $module->total_xp_reward,
+                'total_pieces' => $module->pieces()->count(),
+                'total_lessons' => $totalLessons,
+                'total_tasks' => $module->tasks()->count(),
+            ],
+            'progress' => $moduleProgress ? [
+                'status' => $moduleProgress->status,
+                'progress_percentage' => $moduleProgress->progress_percentage,
+                'progress_formatted' => $moduleProgress->progress_formatted,
+                'is_completed' => $moduleProgress->is_completed,
+                'started_at' => $moduleProgress->started_at?->toISOString(),
+                'completed_at' => $moduleProgress->completed_at?->toISOString(),
+                'time_spent_seconds' => $moduleProgress->time_spent_seconds,
+            ] : [
+                'status' => UserModuleProgress::STATUS_NOT_STARTED,
+                'progress_percentage' => 0,
+                'progress_formatted' => '0%',
+                'is_completed' => false,
+                'started_at' => null,
+                'completed_at' => null,
+                'time_spent_seconds' => 0,
+            ],
+            'pieces' => $piecesWithProgress,
+        ]);
     }
 
     /**
@@ -71,9 +221,7 @@ class EducationModuleController extends Controller
         $user = $request->user();
 
         if (!$user->isStudent()) {
-            return response()->json([
-                'message' => 'Доступ только для учеников'
-            ], 403);
+            return response()->json(['message' => 'Доступ только для учеников'], 403);
         }
 
         $schoolClassTypeId = $user->school_class_type_id;
@@ -92,7 +240,6 @@ class EducationModuleController extends Controller
             ]);
         }
 
-        // Получаем модули по типу класса
         $modules = EducationModule::published()
             ->where('school_class_type_id', $schoolClassTypeId)
             ->ordered()
@@ -154,7 +301,6 @@ class EducationModuleController extends Controller
             'meta' => [
                 'school_class_type_id' => $schoolClassTypeId,
                 'user_class_type' => $user->schoolClassType?->name ?? 'Не указан',
-                'user_school_class' => $user->schoolClass?->name ?? 'Не указан',
             ]
         ]);
     }
@@ -167,16 +313,11 @@ class EducationModuleController extends Controller
         $user = $request->user();
 
         if (!$user->isStudent()) {
-            return response()->json([
-                'message' => 'Доступ только для учеников'
-            ], 403);
+            return response()->json(['message' => 'Доступ только для учеников'], 403);
         }
 
-        // Проверяем, что модуль соответствует типу класса ученика
         if ($module->school_class_type_id !== $user->school_class_type_id) {
-            return response()->json([
-                'message' => 'Этот модуль не соответствует вашему классу'
-            ], 403);
+            return response()->json(['message' => 'Этот модуль не соответствует вашему классу'], 403);
         }
 
         $progress = $user->moduleProgress()
@@ -209,7 +350,6 @@ class EducationModuleController extends Controller
                 'id' => $module->id,
                 'name' => $module->name,
                 'slug' => $module->slug,
-                'school_class_type_id' => $module->school_class_type_id,
             ],
             'progress' => $progress ? [
                 'status' => $progress->status,
@@ -240,9 +380,7 @@ class EducationModuleController extends Controller
         $user = $request->user();
 
         if (!$user->isStudent()) {
-            return response()->json([
-                'message' => 'Доступ только для учеников'
-            ], 403);
+            return response()->json(['message' => 'Доступ только для учеников'], 403);
         }
 
         $schoolClassTypeId = $user->school_class_type_id;
@@ -254,13 +392,11 @@ class EducationModuleController extends Controller
             ]);
         }
 
-        // Получаем ID завершенных модулей
         $completedModuleIds = $user->moduleProgress()
             ->where('status', UserModuleProgress::STATUS_COMPLETED)
             ->pluck('module_id')
             ->toArray();
 
-        // Рекомендуем модули по типу класса, которые не завершены
         $recommended = EducationModule::published()
             ->where('school_class_type_id', $schoolClassTypeId)
             ->whereNotIn('id', $completedModuleIds)
