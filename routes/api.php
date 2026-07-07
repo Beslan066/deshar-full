@@ -61,7 +61,6 @@ Route::group(['namespace' => 'Api'], function () {
 });
 
 
-
 // Получение текущего пользователя (требует авторизацию)
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -73,4 +72,22 @@ Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () 
         Route::get('/', [App\Http\Controllers\Api\RoleController::class, 'index']);
     });
 
+
+    //  МАРШРУТЫ ДЛЯ ОБРАЗОВАТЕЛЬНЫХ МОДУЛЕЙ
+    Route::group(['prefix' => 'modules'], function () {
+        // Получить все модули для класса ученика
+        Route::get('/', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'index']);
+
+        // Получить конкретный модуль с детальным прогрессом
+        Route::get('/{module}', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'show']);
+
+        // Получить прогресс по всем модулям
+        Route::get('/progress', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'progress']);
+
+        // Получить прогресс по конкретному модулю
+        Route::get('/{module}/progress', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'moduleProgress']);
+
+        // Получить рекомендованные модули
+        Route::get('/recommended', [App\Http\Controllers\Api\Frontend\Student\EducationModuleController::class, 'recommended']);
+    });
 });
