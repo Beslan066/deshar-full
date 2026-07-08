@@ -208,6 +208,8 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user->load('role');
+
         return new UserProgressResource($user);
     }
 

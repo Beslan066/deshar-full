@@ -219,6 +219,26 @@ class UserProgressResource extends JsonResource
     }
 
     /**
+     * Рассчитать средний балл
+     */
+    private function calculateAverageScore(): float
+    {
+        try {
+            $scores = $this->taskProgress()
+                ->whereNotNull('score')
+                ->pluck('score');
+
+            if ($scores->isEmpty()) {
+                return 0;
+            }
+
+            return round($scores->avg(), 2);
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
      * Рассчитать общее время
      */
     private function calculateTotalTimeSpent(): int
