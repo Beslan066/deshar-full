@@ -4,6 +4,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Frontend\SchoolManager\SchoolManagementController;
 use App\Http\Controllers\Api\Frontend\Student\EducationModuleController;
+use App\Http\Controllers\Api\Frontend\Student\LessonController;
 use App\Http\Controllers\Api\Frontend\Student\PieceController;
 use Illuminate\Support\Facades\Route;
 
