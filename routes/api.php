@@ -2,6 +2,7 @@
 // routes/api.php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Frontend\SchoolManager\SchoolManagementController;
 use App\Http\Controllers\Api\Frontend\Student\EducationModuleController;
 use Illuminate\Support\Facades\Route;
 
@@ -87,6 +88,38 @@ Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () 
 
             // 3. Маршрут для списка (должен быть последним)
             Route::get('/', [EducationModuleController::class, 'index']);
+        });
+
+        Route::group(['prefix' => 'school'], function () {
+            // Получить все классы в школе
+            Route::get('/classes', [SchoolManagementController::class, 'getClasses']);
+
+            // Получить учеников класса
+            Route::get('/classes/{classId}/students', [SchoolManagementController::class, 'getClassStudents']);
+
+            // Получить учителей школы
+            Route::get('/teachers', [SchoolManagementController::class, 'getTeachers']);
+
+            // Получить учителей школы
+            Route::get('/teachers', [SchoolManagementController::class, 'getTeachers']);
+
+            // Получить учителей с детальной статистикой
+            Route::get('/teachers/stats', [SchoolManagementController::class, 'getTeachersWithStats']);
+
+            // Получить статистику по школе
+            Route::get('/statistics', [SchoolManagementController::class, 'getStatistics']);
+
+            // Получить статистику по конкретному классу
+            Route::get('/classes/{classId}/statistics', [SchoolManagementController::class, 'getClassStatistics']);
+
+            // Получить прогресс ученика
+            Route::get('/students/{userId}/progress', [SchoolManagementController::class, 'getStudentProgress']);
+
+            // Получить всех учеников школы с их прогрессом
+            Route::get('/students', [SchoolManagementController::class, 'getAllStudents']);
+
+            // Экспорт данных в CSV
+            Route::get('/export', [SchoolManagementController::class, 'exportData']);
         });
     });
 });
