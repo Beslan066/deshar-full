@@ -78,15 +78,17 @@ Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () 
     //  МАРШРУТЫ ДЛЯ ОБРАЗОВАТЕЛЬНЫХ МОДУЛЕЙ
     Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () {
         Route::group(['prefix' => 'modules'], function () {
-            // 1. Конкретные маршруты (без параметров)
+            // Сначала идут конкретные маршруты (без параметров)
             Route::get('/progress', [EducationModuleController::class, 'progress']);
             Route::get('/recommended', [EducationModuleController::class, 'recommended']);
 
-            // 2. Маршруты с параметрами
+            // Маршруты с параметрами
             Route::get('/{module}/progress', [EducationModuleController::class, 'moduleProgress']);
+            Route::get('/{module}/lessons/{lesson}', [EducationModuleController::class, 'lesson']);
+            Route::get('/{module}/lessons/{lesson}/tasks/{task}', [EducationModuleController::class, 'task']);
             Route::get('/{module}', [EducationModuleController::class, 'show']);
 
-            // 3. Маршрут для списка (должен быть последним)
+            // Маршрут для списка (должен быть последним)
             Route::get('/', [EducationModuleController::class, 'index']);
         });
 
