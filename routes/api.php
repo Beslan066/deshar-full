@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Frontend\SchoolManager\SchoolManagementController;
 use App\Http\Controllers\Api\Frontend\Student\EducationModuleController;
 use App\Http\Controllers\Api\Frontend\Student\LessonController;
 use App\Http\Controllers\Api\Frontend\Student\PieceController;
+use App\Http\Controllers\Api\Frontend\Student\TaskController;
 use Illuminate\Support\Facades\Route;
 
 // Публичные маршруты с ограничением по частоте
