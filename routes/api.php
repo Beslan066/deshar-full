@@ -4,6 +4,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Frontend\SchoolManager\SchoolManagementController;
 use App\Http\Controllers\Api\Frontend\Student\EducationModuleController;
+use App\Http\Controllers\Api\Frontend\Student\PieceController;
 use Illuminate\Support\Facades\Route;
 
 // Публичные маршруты с ограничением по частоте
@@ -78,18 +79,27 @@ Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () 
     //  МАРШРУТЫ ДЛЯ ОБРАЗОВАТЕЛЬНЫХ МОДУЛЕЙ
     Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () {
         Route::group(['prefix' => 'modules'], function () {
-            // Сначала идут конкретные маршруты (без параметров)
+            // --- МАРШРУТЫ ДЛЯ МОДУЛЕЙ ---
+            Route::get('/', [EducationModuleController::class, 'index']);
             Route::get('/progress', [EducationModuleController::class, 'progress']);
             Route::get('/recommended', [EducationModuleController::class, 'recommended']);
-
-            // Маршруты с параметрами
-            Route::get('/{module}/progress', [EducationModuleController::class, 'moduleProgress']);
-            Route::get('/{module}/lessons/{lesson}', [EducationModuleController::class, 'lesson']);
-            Route::get('/{module}/lessons/{lesson}/tasks/{task}', [EducationModuleController::class, 'task']);
             Route::get('/{module}', [EducationModuleController::class, 'show']);
+            Route::get('/{module}/progress', [EducationModuleController::class, 'moduleProgress']);
 
-            // Маршрут для списка (должен быть последним)
-            Route::get('/', [EducationModuleController::class, 'index']);
+            // --- МАРШРУТЫ ДЛЯ РАЗДЕЛОВ (PIECES) ---
+            Route::get('/{module}/pieces', [PieceController::class, 'index']);
+            Route::get('/{module}/pieces/{piece}', [PieceController::class, 'show']);
+            Route::get('/{module}/pieces/{piece}/progress', [PieceController::class, 'progress']);
+
+            // --- МАРШРУТЫ ДЛЯ УРОКОВ (LESSONS) ---
+            Route::get('/{module}/pieces/{piece}/lessons', [LessonController::class, 'index']);
+            Route::get('/{module}/pieces/{piece}/lessons/{lesson}', [LessonController::class, 'show']);
+            Route::get('/{module}/pieces/{piece}/lessons/{lesson}/progress', [LessonController::class, 'progress']);
+
+            // --- МАРШРУТЫ ДЛЯ ЗАДАНИЙ (TASKS) ---
+            Route::get('/{module}/pieces/{piece}/lessons/{lesson}/tasks', [TaskController::class, 'index']);
+            Route::get('/{module}/pieces/{piece}/lessons/{lesson}/tasks/{task}', [TaskController::class, 'show']);
+            Route::post('/{module}/pieces/{piece}/lessons/{lesson}/tasks/{task}/complete', [TaskController::class, 'complete']);
         });
 
         Route::group(['prefix' => 'school'], function () {
