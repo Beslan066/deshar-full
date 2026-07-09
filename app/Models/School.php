@@ -46,4 +46,19 @@ class School extends Model
     public function manager() {
         return $this->belongsTo(User::class, 'manager_id');
     }
+
+    public function students()
+    {
+        return $this->hasMany(User::class)->where('role_id', 9);
+    }
+
+
+    public function teachers() {
+        return $this->hasMany(User::class)->where('role_id', 8);
+    }
+
+    public function classes()
+    {
+        return $this->hasMany(SchoolClass::class);
+    }
 }

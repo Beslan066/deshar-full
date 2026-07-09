@@ -21,4 +21,8 @@ class District extends Model
     public function manager() {
         return $this->belongsTo(User::class, 'manager_id');
     }
+
+    public function schools() {
+        return $this->hasMany(School::class);
+    }
 }

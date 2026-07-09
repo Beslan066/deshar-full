@@ -2,6 +2,8 @@
 // routes/api.php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Frontend\EducationDepartment\EducationDepartmentController;
+use App\Http\Controllers\Api\Frontend\Ministry\MinistryRepresentativeController;
 use App\Http\Controllers\Api\Frontend\SchoolManager\SchoolManagementController;
 use App\Http\Controllers\Api\Frontend\Student\EducationModuleController;
 use App\Http\Controllers\Api\Frontend\Student\LessonController;
@@ -134,6 +136,24 @@ Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () 
 
             // Экспорт данных в CSV
             Route::get('/export', [SchoolManagementController::class, 'exportData']);
+        });
+
+        Route::group([ 'prefix' => 'ministry'], function () {
+            Route::get('/districts', [MinistryRepresentativeController::class, 'districts']);
+            Route::get('/schools', [MinistryRepresentativeController::class, 'schools']);
+            Route::get('/schools/{school}/stats', [MinistryRepresentativeController::class, 'schoolStats']);
+            Route::get('/districts/{district}/stats', [MinistryRepresentativeController::class, 'districtStats']);
+            Route::get('/republic/stats', [MinistryRepresentativeController::class, 'republicStats']);
+        });
+
+        // Пр. Управления образования (role_id: 5)
+        Route::group(['prefix' => 'education-department'], function () {
+            Route::get('/my-district', [EducationDepartmentController::class, 'myDistrict']);
+            Route::get('/schools', [EducationDepartmentController::class, 'schools']);
+            Route::get('/schools/{school}/stats', [EducationDepartmentController::class, 'schoolStats']);
+            Route::get('/district/stats', [EducationDepartmentController::class, 'districtStats']);
+            Route::get('/students', [EducationDepartmentController::class, 'students']);
+            Route::get('/teachers', [EducationDepartmentController::class, 'teachers']);
         });
     });
 });
