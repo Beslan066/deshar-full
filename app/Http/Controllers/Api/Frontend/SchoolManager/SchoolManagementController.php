@@ -19,7 +19,15 @@ class SchoolManagementController extends Controller
     private function checkAccess(Request $request): bool
     {
         $user = $request->user();
-        return $user && $user->role_id === 6;
+
+        if (!$user) {
+            return false;
+        }
+
+        // Разрешенные роли: Представитель школы (role_id: 6) и Директор школы (role_id: 7)
+        $allowedRoleIds = [6, 7];
+
+        return in_array($user->role_id, $allowedRoleIds);
     }
 
     /**
