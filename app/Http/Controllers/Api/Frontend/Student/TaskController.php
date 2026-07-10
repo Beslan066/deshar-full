@@ -36,6 +36,7 @@ class TaskController extends Controller
         }
 
         $tasks = $lesson->tasks()
+            ->with(['taskType'])
             ->orderBy('sort_order')
             ->get();
 
@@ -48,12 +49,19 @@ class TaskController extends Controller
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,
-                'type' => $task->type,
+                'task_type' => $task->taskType ? [
+                    'id' => $task->taskType->id,
+                    'name' => $task->taskType->name,
+                    'slug' => $task->taskType->slug,
+                ] : null,
                 'sort_order' => $task->sort_order,
                 'xp_reward' => $task->xp_reward,
                 'is_required' => $task->is_required,
                 'is_published' => $task->is_published,
-                'options' => $task->options, // для заданий с вариантами
+                'max_attempts' => $task->max_attempts,
+                'time_limit_seconds' => $task->time_limit_seconds,
+                'has_hints' => !empty($task->hints),
+                'hints_count' => count($task->hints ?? []),
                 'progress' => $progress ? [
                     'status' => $progress->status,
                     'is_completed' => $progress->is_completed,
@@ -110,14 +118,30 @@ class TaskController extends Controller
             return response()->json(['message' => 'Задание не принадлежит этому уроку'], 404);
         }
 
+        // Загружаем тип задания
+        $task->load(['taskType']);
+
         $progress = $user->taskProgress()
             ->where('task_id', $task->id)
             ->first();
 
         // Для задания с вариантами ответов скрываем правильный ответ
         $taskData = $task->toArray();
-        if ($task->type === 'choose' || $task->type === 'multiple') {
-            unset($taskData['correct_answer']); // Скрываем правильный ответ
+
+        // Добавляем информацию о типе задания
+        $taskData['task_type'] = $task->taskType ? [
+            'id' => $task->taskType->id,
+            'name' => $task->taskType->name,
+            'slug' => $task->taskType->slug,
+            'description' => $task->taskType->description,
+        ] : null;
+
+        // Скрываем правильный ответ для некоторых типов
+        if (in_array($task->taskType?->slug, ['choose_one', 'choose_three', 'match_pairs'])) {
+            unset($taskData['config']['correct']);
+            unset($taskData['config']['correct_answer']);
+            // Можно оставить только метаданные для фронтенда
+            $taskData['config']['has_correct_answer'] = true;
         }
 
         return response()->json([
@@ -130,6 +154,7 @@ class TaskController extends Controller
                 'completed_at' => $progress->completed_at?->toISOString(),
                 'attempts' => $progress->attempts,
                 'last_answer' => $progress->last_answer,
+                'attempts_left' => max(0, ($task->max_attempts ?? 3) - $progress->attempts),
             ] : [
                 'status' => 'not_started',
                 'is_completed' => false,
@@ -137,6 +162,7 @@ class TaskController extends Controller
                 'completed_at' => null,
                 'attempts' => 0,
                 'last_answer' => null,
+                'attempts_left' => $task->max_attempts ?? 3,
             ],
             'meta' => [
                 'module_id' => $module->id,
@@ -255,9 +281,15 @@ class TaskController extends Controller
             'success' => true,
             'is_correct' => $isCorrect,
             'message' => $message,
+            'task_type' => $task->taskType ? [
+                'id' => $task->taskType->id,
+                'name' => $task->taskType->name,
+                'slug' => $task->taskType->slug,
+            ] : null,
             'progress' => $progress->toApiArray(),
             'xp_earned' => $isCorrect ? ($task->xp_reward ?? 10) : 0,
             'attempts' => $progress->attempts,
+            'attempts_left' => max(0, ($task->max_attempts ?? 3) - $progress->attempts),
             'hint' => (!$isCorrect && $progress->attempts >= 3) ? $this->getHint($task) : null,
         ]);
     }
