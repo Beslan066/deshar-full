@@ -8,6 +8,9 @@ use App\Models\EducationModulePiece;
 use App\Models\Lesson;
 use App\Models\Task;
 use App\Models\UserTaskProgress;
+use App\Models\UserLessonProgress;
+use App\Models\UserPieceProgress;
+use App\Models\UserModuleProgress;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -66,12 +69,14 @@ class TaskController extends Controller
                     'status' => $progress->status,
                     'is_completed' => $progress->is_completed,
                     'completed_at' => $progress->completed_at?->toISOString(),
-                    'attempts' => $progress->attempts,
+                    'attempts' => $progress->attempts_count,
+                    'attempts_left' => $progress->attempts_left,
                 ] : [
                     'status' => 'not_started',
                     'is_completed' => false,
                     'completed_at' => null,
                     'attempts' => 0,
+                    'attempts_left' => $task->max_attempts ?? 3,
                 ],
             ];
         });
@@ -140,7 +145,6 @@ class TaskController extends Controller
         if (in_array($task->taskType?->slug, ['choose_one', 'choose_three', 'match_pairs'])) {
             unset($taskData['config']['correct']);
             unset($taskData['config']['correct_answer']);
-            // Можно оставить только метаданные для фронтенда
             $taskData['config']['has_correct_answer'] = true;
         }
 
@@ -150,11 +154,11 @@ class TaskController extends Controller
             'progress' => $progress ? [
                 'status' => $progress->status,
                 'is_completed' => $progress->is_completed,
-                'started_at' => $progress->started_at?->toISOString(),
+                'started_at' => $progress->created_at?->toISOString(),
                 'completed_at' => $progress->completed_at?->toISOString(),
-                'attempts' => $progress->attempts,
+                'attempts' => $progress->attempts_count,
                 'last_answer' => $progress->last_answer,
-                'attempts_left' => max(0, ($task->max_attempts ?? 3) - $progress->attempts),
+                'attempts_left' => $progress->attempts_left,
             ] : [
                 'status' => 'not_started',
                 'is_completed' => false,
@@ -179,156 +183,270 @@ class TaskController extends Controller
     {
         $user = $request->user();
 
-        // Проверяем доступ к модулю
+        // Проверяем доступ
         if ($module->school_class_type_id !== $user->school_class_type_id) {
             return response()->json(['message' => 'Доступ запрещен'], 403);
         }
 
-        // Проверяем, что раздел принадлежит модулю
         if ($piece->education_module_id !== $module->id) {
             return response()->json(['message' => 'Раздел не принадлежит этому модулю'], 404);
         }
 
-        // Проверяем, что урок принадлежит разделу
         if ($lesson->piece_id !== $piece->id) {
             return response()->json(['message' => 'Урок не принадлежит этому разделу'], 404);
         }
 
-        // Проверяем, что задание принадлежит уроку
         if ($task->lesson_id !== $lesson->id) {
             return response()->json(['message' => 'Задание не принадлежит этому уроку'], 404);
         }
 
-        // Валидация входящих данных
-        $validated = $request->validate([
-            'answer' => 'required|string|max:1000',
-            'time_spent' => 'nullable|integer|min:0', // время в секундах
-        ]);
+        // Загружаем тип задания
+        $task->load(['taskType']);
+        $taskTypeSlug = $task->taskType?->slug ?? 'unknown';
+
+        // Валидация
+        $rules = $this->getValidationRules($taskTypeSlug);
+        $validated = $request->validate($rules);
 
         // Получаем или создаем прогресс задания
-        $progress = $user->taskProgress()
+        $taskProgress = $user->taskProgress()
             ->where('task_id', $task->id)
             ->first();
 
-        if (!$progress) {
-            $progress = new UserTaskProgress([
+        if (!$taskProgress) {
+            $taskProgress = new UserTaskProgress([
                 'user_id' => $user->id,
                 'task_id' => $task->id,
-                'status' => UserTaskProgress::STATUS_IN_PROGRESS,
-                'attempts' => 0,
+                'status' => UserTaskProgress::STATUS_PENDING,
+                'attempts_count' => 0,
             ]);
         }
 
         // Проверяем, не выполнено ли уже задание
-        if ($progress->status === UserTaskProgress::STATUS_COMPLETED) {
+        if ($taskProgress->status === UserTaskProgress::STATUS_COMPLETED) {
             return response()->json([
                 'message' => 'Задание уже выполнено',
                 'is_completed' => true,
-                'progress' => $progress->toApiArray(),
+                'progress' => $taskProgress->toApiArray(),
             ]);
         }
 
-        // Увеличиваем счетчик попыток
-        $progress->attempts += 1;
-        $progress->last_answer = $validated['answer'];
-        $progress->last_activity_at = now();
-
-        if (!$progress->started_at) {
-            $progress->started_at = now();
+        // Проверяем попытки
+        if ($taskProgress->attempts_count >= ($task->max_attempts ?? 3)) {
+            return response()->json([
+                'message' => 'Попытки исчерпаны',
+                'is_completed' => false,
+                'attempts' => $taskProgress->attempts_count,
+                'attempts_left' => 0,
+            ], 422);
         }
 
-        // Добавляем время, если передано
+        // Увеличиваем счетчик попыток
+        $taskProgress->attempts_count += 1;
+
+        // Сохраняем ответ
+        $taskProgress->user_answers = is_array($validated['answer'])
+            ? $validated['answer']
+            : $validated['answer'];
+
+        $taskProgress->last_answer = is_array($validated['answer'])
+            ? json_encode($validated['answer'])
+            : $validated['answer'];
+
+        $taskProgress->last_activity_at = now();
+
+        if (!$taskProgress->started_at) {
+            $taskProgress->started_at = now();
+        }
+
         if (isset($validated['time_spent'])) {
-            $progress->time_spent_seconds = ($progress->time_spent_seconds ?? 0) + $validated['time_spent'];
+            $taskProgress->time_spent_seconds = ($taskProgress->time_spent_seconds ?? 0) + $validated['time_spent'];
         }
 
         // Проверяем правильность ответа
         $isCorrect = $this->checkAnswer($task, $validated['answer']);
 
         if ($isCorrect) {
-            // Задание выполнено правильно
-            $progress->status = UserTaskProgress::STATUS_COMPLETED;
-            $progress->completed_at = now();
-            $progress->progress_percentage = 100;
+            // ✅ Задание выполнено правильно
+            $taskProgress->status = UserTaskProgress::STATUS_COMPLETED;
+            $taskProgress->completed_at = now();
+            $taskProgress->progress_percentage = 100;
 
-            // Начисляем XP пользователю
+            // Начисляем XP
             $user->addXp($task->xp_reward ?? 10, 'task_completed');
-
-            // Обновляем прогресс урока
-            $this->updateLessonProgress($user, $lesson);
-
-            // Обновляем прогресс раздела
-            $this->updatePieceProgress($user, $piece);
-
-            // Обновляем прогресс модуля
-            $this->updateModuleProgress($user, $module);
 
             $message = 'Задание выполнено правильно! +' . ($task->xp_reward ?? 10) . ' XP';
         } else {
-            // Задание выполнено неправильно
-            $progress->status = UserTaskProgress::STATUS_FAILED;
+            // ❌ Задание выполнено неправильно
+            $taskProgress->status = UserTaskProgress::STATUS_FAILED;
             $message = 'Ответ неправильный. Попробуйте еще раз.';
 
-            // Если много попыток, можно дать подсказку
-            if ($progress->attempts >= 3) {
-                $message .= ' Подсказка: ' . $this->getHint($task);
+            if ($taskProgress->attempts_count >= 3) {
+                $hint = $this->getHint($task);
+                if ($hint) {
+                    $message .= ' Подсказка: ' . $hint;
+                }
             }
         }
 
-        $progress->save();
+        $taskProgress->save();
+
+        // ============================================================
+        // 🚀 ОБНОВЛЯЕМ ПРОГРЕСС НА ВСЕХ УРОВНЯХ
+        // ============================================================
+
+        // 1. Обновляем прогресс урока
+        $this->updateLessonProgress($user, $lesson);
+
+        // 2. Обновляем прогресс раздела
+        $this->updatePieceProgress($user, $piece);
+
+        // 3. Обновляем прогресс модуля
+        $this->updateModuleProgress($user, $module);
+
+        // ============================================================
+        // 📊 ВОЗВРАЩАЕМ ОТВЕТ С ПРОГРЕССОМ НА ВСЕХ УРОВНЯХ
+        // ============================================================
+
+        // Получаем обновленные прогрессы
+        $lessonProgress = $user->lessonProgress()->where('lesson_id', $lesson->id)->first();
+        $pieceProgress = $user->pieceProgress()->where('piece_id', $piece->id)->first();
+        $moduleProgress = $user->moduleProgress()->where('module_id', $module->id)->first();
 
         return response()->json([
             'success' => true,
             'is_correct' => $isCorrect,
             'message' => $message,
+            'task' => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'xp_reward' => $task->xp_reward,
+            ],
             'task_type' => $task->taskType ? [
                 'id' => $task->taskType->id,
                 'name' => $task->taskType->name,
                 'slug' => $task->taskType->slug,
             ] : null,
-            'progress' => $progress->toApiArray(),
+            'progress' => [
+                'task' => $taskProgress->toApiArray(),
+                'lesson' => $lessonProgress ? $lessonProgress->toApiArray() : null,
+                'piece' => $pieceProgress ? $pieceProgress->toApiArray() : null,
+                'module' => $moduleProgress ? $moduleProgress->toApiArray() : null,
+            ],
             'xp_earned' => $isCorrect ? ($task->xp_reward ?? 10) : 0,
-            'attempts' => $progress->attempts,
-            'attempts_left' => max(0, ($task->max_attempts ?? 3) - $progress->attempts),
-            'hint' => (!$isCorrect && $progress->attempts >= 3) ? $this->getHint($task) : null,
+            'attempts' => $taskProgress->attempts_count,
+            'attempts_left' => max(0, ($task->max_attempts ?? 3) - $taskProgress->attempts_count),
+            'hint' => (!$isCorrect && $taskProgress->attempts_count >= 3) ? $this->getHint($task) : null,
         ]);
+    }
+
+    /**
+     * Получить правила валидации в зависимости от типа задания
+     */
+    private function getValidationRules(string $taskTypeSlug): array
+    {
+        $rules = [
+            'time_spent' => 'nullable|integer|min:0',
+        ];
+
+        switch ($taskTypeSlug) {
+            case 'choose_one':
+            case 'fill_word':
+            case 'build_word':
+            case 'word_from_image':
+            case 'fix_word':
+            case 'stress_mark':
+            case 'find_extra_letter':
+                $rules['answer'] = 'required|string|max:1000';
+                break;
+
+            case 'choose_three':
+            case 'alphabet_letters':
+            case 'alphabet_images':
+            case 'alphabet_words':
+            case 'connect_letters':
+            case 'story_order':
+            case 'find_by_rule':
+            case 'find_by_condition':
+            case 'build_dialogue':
+                $rules['answer'] = 'required|array';
+                break;
+
+            case 'match_pairs':
+            case 'drag_drop_text':
+            case 'color_categories':
+            case 'connect_category':
+            case 'drag_to_image':
+            case 'match_behavior':
+                $rules['answer'] = 'required|array';
+                break;
+
+            default:
+                $rules['answer'] = 'required|string|max:1000';
+                break;
+        }
+
+        return $rules;
     }
 
     /**
      * Проверить ответ на задание
      */
-    private function checkAnswer(Task $task, string $answer): bool
+    private function checkAnswer(Task $task, mixed $answer): bool
     {
-        // В зависимости от типа задания
-        switch ($task->type) {
-            case 'choose':
-            case 'single':
-                // Для одиночного выбора - сравниваем с правильным ответом
-                return strtolower(trim($answer)) === strtolower(trim($task->correct_answer));
+        $taskTypeSlug = $task->taskType?->slug ?? 'unknown';
+        $config = $task->config ?? [];
 
-            case 'multiple':
-                // Для множественного выбора - нужно сравнить массивы
-                $userAnswers = json_decode($answer, true);
-                $correctAnswers = json_decode($task->correct_answer, true);
-                if (!is_array($userAnswers) || !is_array($correctAnswers)) {
+        switch ($taskTypeSlug) {
+            case 'choose_one':
+                $correctOptions = array_filter($config['options'] ?? [], function ($option) {
+                    return $option['is_correct'] ?? false;
+                });
+                $correctId = !empty($correctOptions) ? reset($correctOptions)['id'] : null;
+                return $answer === $correctId;
+
+            case 'choose_three':
+                $correctOptions = array_filter($config['options'] ?? [], function ($option) {
+                    return $option['is_correct'] ?? false;
+                });
+                $correctIds = array_column($correctOptions, 'id');
+
+                if (!is_array($answer) || count($answer) !== count($correctIds)) {
                     return false;
                 }
-                sort($userAnswers);
-                sort($correctAnswers);
-                return $userAnswers === $correctAnswers;
 
-            case 'text':
-                // Для текстового ответа - сравниваем с правильным (можно добавить нечеткое сравнение)
-                return strtolower(trim($answer)) === strtolower(trim($task->correct_answer));
+                sort($correctIds);
+                $userIds = $answer;
+                sort($userIds);
+                return $correctIds === $userIds;
 
-            case 'drag_drop':
-                // Для drag&drop - нужно сравнивать соответствия
-                $userMatches = json_decode($answer, true);
-                $correctMatches = json_decode($task->correct_answer, true);
-                return $userMatches === $correctMatches;
+            case 'fill_word':
+                $correct = $config['correct'] ?? '';
+                $caseSensitive = $config['case_sensitive'] ?? false;
+                return $caseSensitive
+                    ? $answer === $correct
+                    : strtolower($answer) === strtolower($correct);
+
+            case 'match_pairs':
+                $pairs = $config['pairs'] ?? [];
+                if (!is_array($answer) || count($answer) !== count($pairs)) {
+                    return false;
+                }
+                foreach ($pairs as $pair) {
+                    $match = $answer[$pair['id']] ?? null;
+                    if ($match !== $pair['correct_match']) {
+                        return false;
+                    }
+                }
+                return true;
+
+            case 'build_word':
+                $correct = $config['correct_word'] ?? '';
+                return strtoupper($answer) === strtoupper($correct);
 
             default:
-                return false;
+                $correct = $task->getCorrectAnswer();
+                return $answer === $correct;
         }
     }
 
@@ -337,7 +455,6 @@ class TaskController extends Controller
      */
     private function getHint(Task $task): ?string
     {
-        // Можно хранить подсказки в metadata
         return $task->metadata['hint'] ?? 'Подумайте еще раз внимательно.';
     }
 
@@ -351,22 +468,30 @@ class TaskController extends Controller
             ->first();
 
         if (!$progress) {
-            $progress = new \App\Models\UserLessonProgress([
+            $progress = new UserLessonProgress([
                 'user_id' => $user->id,
                 'lesson_id' => $lesson->id,
-                'status' => 'in_progress',
+                'status' => 'not_started',
             ]);
         }
 
         $totalTasks = $lesson->tasks()->count();
-        $completedTasks = $lesson->tasks()
-            ->whereHas('userProgress', function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                    ->where('status', UserTaskProgress::STATUS_COMPLETED);
-            })
+
+        if ($totalTasks === 0) {
+            $progress->progress_percentage = 100;
+            $progress->status = 'completed';
+            $progress->completed_at = now();
+            $progress->save();
+            return;
+        }
+
+        $taskIds = $lesson->tasks()->pluck('id')->toArray();
+        $completedTasks = UserTaskProgress::where('user_id', $user->id)
+            ->whereIn('task_id', $taskIds)
+            ->where('status', UserTaskProgress::STATUS_COMPLETED)
             ->count();
 
-        $progress->progress_percentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 100;
+        $progress->progress_percentage = round(($completedTasks / $totalTasks) * 100, 2);
 
         if ($progress->progress_percentage >= 100) {
             $progress->status = 'completed';
@@ -392,7 +517,7 @@ class TaskController extends Controller
             ->first();
 
         if (!$progress) {
-            $progress = new \App\Models\UserPieceProgress([
+            $progress = new UserPieceProgress([
                 'user_id' => $user->id,
                 'piece_id' => $piece->id,
                 'status' => 'not_started',
@@ -400,14 +525,22 @@ class TaskController extends Controller
         }
 
         $totalLessons = $piece->lessons()->count();
-        $completedLessons = $piece->lessons()
-            ->whereHas('userProgress', function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                    ->where('status', 'completed');
-            })
+
+        if ($totalLessons === 0) {
+            $progress->progress_percentage = 100;
+            $progress->status = 'completed';
+            $progress->completed_at = now();
+            $progress->save();
+            return;
+        }
+
+        $lessonIds = $piece->lessons()->pluck('id')->toArray();
+        $completedLessons = UserLessonProgress::where('user_id', $user->id)
+            ->whereIn('lesson_id', $lessonIds)
+            ->where('status', 'completed')
             ->count();
 
-        $progress->progress_percentage = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 100;
+        $progress->progress_percentage = round(($completedLessons / $totalLessons) * 100, 2);
 
         if ($progress->progress_percentage >= 100) {
             $progress->status = 'completed';
@@ -433,7 +566,7 @@ class TaskController extends Controller
             ->first();
 
         if (!$progress) {
-            $progress = new \App\Models\UserModuleProgress([
+            $progress = new UserModuleProgress([
                 'user_id' => $user->id,
                 'module_id' => $module->id,
                 'status' => 'not_started',
@@ -441,14 +574,22 @@ class TaskController extends Controller
         }
 
         $totalPieces = $module->pieces()->count();
-        $completedPieces = $module->pieces()
-            ->whereHas('userProgress', function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                    ->where('status', 'completed');
-            })
+
+        if ($totalPieces === 0) {
+            $progress->progress_percentage = 100;
+            $progress->status = 'completed';
+            $progress->completed_at = now();
+            $progress->save();
+            return;
+        }
+
+        $pieceIds = $module->pieces()->pluck('id')->toArray();
+        $completedPieces = UserPieceProgress::where('user_id', $user->id)
+            ->whereIn('piece_id', $pieceIds)
+            ->where('status', 'completed')
             ->count();
 
-        $progress->progress_percentage = $totalPieces > 0 ? round(($completedPieces / $totalPieces) * 100, 2) : 100;
+        $progress->progress_percentage = round(($completedPieces / $totalPieces) * 100, 2);
 
         if ($progress->progress_percentage >= 100) {
             $progress->status = 'completed';

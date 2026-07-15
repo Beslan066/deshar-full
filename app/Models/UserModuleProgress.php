@@ -96,6 +96,9 @@ class UserModuleProgress extends Model
     }
 
     // 🔧 Методы
+    /**
+     * Обновить прогресс модуля
+     */
     public function updateProgress(): void
     {
         $module = $this->module;
@@ -113,11 +116,13 @@ class UserModuleProgress extends Model
             return;
         }
 
-        $completedPieces = $module->pieces()
-            ->whereHas('userProgress', function ($query) {
-                $query->where('user_id', $this->user_id)
-                    ->where('status', UserPieceProgress::STATUS_COMPLETED);
-            })
+        // Получаем ID всех разделов модуля
+        $pieceIds = $module->pieces()->pluck('id')->toArray();
+
+        // Считаем завершенные разделы через UserPieceProgress
+        $completedPieces = UserPieceProgress::where('user_id', $this->user_id)
+            ->whereIn('piece_id', $pieceIds)
+            ->where('status', UserPieceProgress::STATUS_COMPLETED)
             ->count();
 
         $this->progress_percentage = round(($completedPieces / $totalPieces) * 100, 2);

@@ -19,16 +19,20 @@ class UserTaskProgress extends Model
         'user_answers',
         'time_spent_seconds',
         'completed_at',
+        'last_answer',
+        'last_activity_at',
     ];
 
     protected $casts = [
         'answer_history' => 'array',
         'user_answers' => 'array',
+        'last_answer' => 'array', // Каст для JSON
         'attempts_count' => 'integer',
         'score' => 'integer',
         'max_score' => 'integer',
         'time_spent_seconds' => 'integer',
         'completed_at' => 'datetime',
+        'last_activity_at' => 'datetime',
     ];
 
     // Константы статусов
@@ -90,6 +94,11 @@ class UserTaskProgress extends Model
         return max(0, ($this->task->max_attempts ?? 3) - $this->attempts_count);
     }
 
+    public function getLastAnswerDecodedAttribute()
+    {
+        return $this->last_answer;
+    }
+
     // 🔧 Методы
     public function markCompleted(int $score = null): void
     {
@@ -128,12 +137,29 @@ class UserTaskProgress extends Model
             'timestamp' => now()->toISOString(),
         ];
         $this->answer_history = $history;
+        $this->last_answer = $answer; // Сохраняем последний ответ
 
         if (!$isCorrect && $this->attempts_count >= ($this->task->max_attempts ?? 3)) {
             $this->markFailed();
         }
 
         $this->save();
+    }
+
+    public function toApiArray(): array
+    {
+        return [
+            'status' => $this->status,
+            'is_completed' => $this->is_completed,
+            'attempts' => $this->attempts_count,
+            'attempts_left' => $this->attempts_left,
+            'score' => $this->score,
+            'max_score' => $this->max_score,
+            'time_spent' => $this->time_spent_seconds,
+            'last_answer' => $this->last_answer,
+            'started_at' => $this->created_at?->toISOString(),
+            'completed_at' => $this->completed_at?->toISOString(),
+        ];
     }
 
     private function updateLessonProgress(): void
@@ -152,7 +178,6 @@ class UserTaskProgress extends Model
 
         $totalRequired = $lesson->tasks()->where('is_required', true)->count();
 
-        // Можно создать или обновить запись в user_lesson_progress
         UserLessonProgress::updateOrCreate(
             [
                 'user_id' => $this->user_id,
@@ -170,20 +195,5 @@ class UserTaskProgress extends Model
                     : null,
             ]
         );
-    }
-
-    public function getTimeStats(): array
-    {
-        return [
-            'total_time' => $this->time_spent_seconds,
-            'average_time_per_attempt' => $this->attempts_count > 0
-                ? round($this->time_spent_seconds / $this->attempts_count, 2)
-                : 0,
-        ];
-    }
-
-    public function getAnswerHistory(): array
-    {
-        return $this->answer_history ?? [];
     }
 }
