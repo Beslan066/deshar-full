@@ -343,52 +343,113 @@ class TaskController extends Controller
     /**
      * Получить правила валидации в зависимости от типа задания
      */
-    private function getValidationRules(string $taskTypeSlug): array
-    {
-        $rules = [
-            'time_spent' => 'nullable|integer|min:0',
-        ];
+    // private function getValidationRules(string $taskTypeSlug): array
+    // {
+    //     $rules = [
+    //         'time_spent' => 'nullable|integer|min:0',
+    //     ];
 
-        switch ($taskTypeSlug) {
-            case 'choose_one':
-            case 'fill_word':
-            case 'build_word':
-            case 'word_from_image':
-            case 'fix_word':
-            case 'stress_mark':
-            case 'find_extra_letter':
-                $rules['answer'] = 'required|string|max:1000';
-                break;
+    //     switch ($taskTypeSlug) {
+    //         case 'choose_one':
+    //         case 'fill_word':
+    //         case 'build_word':
+    //         case 'word_from_image':
+    //         case 'fix_word':
+    //         case 'stress_mark':
+    //         case 'find_extra_letter':
+    //             $rules['answer'] = 'required|string|max:1000';
+    //             break;
 
-            case 'choose_three':
-            case 'alphabet_letters':
-            case 'alphabet_images':
-            case 'alphabet_words':
-            case 'connect_letters':
-            case 'story_order':
-            case 'find_by_rule':
-            case 'find_by_condition':
-            case 'build_dialogue':
-                $rules['answer'] = 'required|array';
-                break;
+    //         case 'choose_three':
+    //         case 'alphabet_letters':
+    //         case 'alphabet_images':
+    //         case 'alphabet_words':
+    //         case 'connect_letters':
+    //         case 'story_order':
+    //         case 'find_by_rule':
+    //         case 'find_by_condition':
+    //         case 'build_dialogue':
+    //             $rules['answer'] = 'required|array';
+    //             break;
 
-            case 'match_pairs':
-            case 'drag_drop_text':
-            case 'color_categories':
-            case 'connect_category':
-            case 'drag_to_image':
-            case 'match_behavior':
-                $rules['answer'] = 'required|array';
-                break;
+    //         case 'match_pairs':
+    //         case 'drag_drop_text':
+    //         case 'color_categories':
+    //         case 'connect_category':
+    //         case 'drag_to_image':
+    //         case 'match_behavior':
+    //             $rules['answer'] = 'required|array';
+    //             break;
 
-            default:
-                $rules['answer'] = 'required|string|max:1000';
-                break;
-        }
+    //         default:
+    //             $rules['answer'] = 'required|string|max:1000';
+    //             break;
+    //     }
 
-        return $rules;
+    //     return $rules;
+    // }
+private function getValidationRules(string $taskTypeSlug): array
+{
+    $rules = [
+        'time_spent' => 'nullable|integer|min:0',
+    ];
+
+    switch ($taskTypeSlug) {
+        case 'choose_one':
+        case 'fill_word':
+        case 'build_word':
+        case 'word_from_image':
+        case 'fix_word':
+        case 'stress_mark':
+        case 'find_extra_letter':
+        case 'fix_sentence': // (Строка) добавим сюда для порядка
+        case 'single_quiz':  // (Строка/Число)
+        case 'word_by_image': // (Строка)
+            $rules['answer'] = 'required|string|max:1000';
+            break;
+
+        case 'choose_three':
+        case 'alphabet_letters':
+        case 'alphabet_images':
+        case 'alphabet_words':
+        case 'connect_letters':
+        case 'story_order':
+        case 'find_by_rule':
+        case 'find_by_condition':
+        case 'build_dialogue':
+        case 'accent_trainer':
+        case 'delete_extra_letter':
+        case 'multi_quiz':
+        case 'word_picker':
+        case 'reorder_items':
+        case 'alphabetic_sorter':
+        case 'category_matcher':
+        case 'colorize_words':
+        case 'conclusion':
+        case 'drop_word_to_image':
+        case 'drop_word_to_text':
+        case 'drag_word_to_pocket':
+        case 'phrase_image_matcher':
+        case'sequence_builder':
+            $rules['answer'] = 'required|array';
+            break;
+
+        case 'match_pairs':
+        case 'drag_drop_text':
+        case 'color_categories':
+        case 'connect_category':
+        case 'drag_to_image':
+        case 'match_behavior':
+            $rules['answer'] = 'required|array';
+            break;
+
+        default:
+            $rules['answer'] = 'required|string|max:1000';
+            break;
     }
 
+    return $rules;
+}
     /**
      * Проверить ответ на задание
      */
@@ -445,6 +506,9 @@ class TaskController extends Controller
                 return strtoupper($answer) === strtoupper($correct);
 
             default:
+                if (method_exists($task, 'checkAnswer')) {
+                    return $task->checkAnswer($answer);
+                }
                 $correct = $task->getCorrectAnswer();
                 return $answer === $correct;
         }
