@@ -544,18 +544,18 @@ class Task extends Model
             // Дополнительные конфиги
             'accent_trainer' => [
                 'variants' => [
-                    ['id' => 1, 'letter' => ''],
-                    ['id' => 2, 'letter' => ''],
+                    ['id' => '1', 'letter' => ''],
+                    ['id' => '2', 'letter' => ''],
                 ],
                 'correct_variant_ids' => [],
                 'shuffle_variants' => true,
             ],
             'single_select_image_quiz' => [
                 'variants' => [
-                    ['id' => 1, 'imageUrl' => ''],
-                    ['id' => 2, 'imageUrl' => ''],
+                    ['id' => '1', 'imageUrl' => ''],
+                    ['id' => '2', 'imageUrl' => ''],
                 ],
-                'correct_variant_id' => 1,
+                'correct_variant_id' => '1',
                 'shuffle_variants' => true,
             ],
             'fix_sentence' => [
@@ -598,7 +598,7 @@ class Task extends Model
                 ],
                 'variants' => [
                     [
-                        'id' => 1,
+                        'id' => 'var-1',
                         'content' => '',
                         'correctColor' => '',
                     ],
@@ -607,18 +607,18 @@ class Task extends Model
             'conclusion' => [
                 'data' => [
                     [
-                        'id' => 1,
+                        'id' => 'conclusion-1',
                         'value' => '',
                         'completed' => false,
                         'variants' => [
                             [
-                                'id' => 1,
+                                'id' => 'variant-1',
                                 'value' => '',
                             ],
                         ],
                         'slots' => [
                             [
-                                'id' => 1,
+                                'id' => 'slot-1',
                                 'current' => null,
                                 'correct' => '',
                             ],
@@ -638,14 +638,14 @@ class Task extends Model
             'drop_word_to_image' => [
                 'items' => [
                     [
-                        'id' => 1,
+                        'id' => 'item-1',
                         'imageUrl' => '',
-                        'correctVariantId' => 1,
+                        'correctVariantId' => 'var-1',
                     ],
                 ],
                 'variants' => [
                     [
-                        'id' => 1,
+                        'id' => 'var-1',
                         'value' => '',
                     ],
                 ],
@@ -653,28 +653,29 @@ class Task extends Model
             'drop_word_to_text' => [
                 'items' => [
                     [
-                        'id' => 1,
+                        'id' => 'item-1',
                         'content' => '',
-                        'correctVariantId' => 1,
+                        'correctVariantId' => 'variant-1',
                     ],
                 ],
                 'variants' => [
                     [
-                        'id' => 1,
+                        'id' => 'variant-1',
                         'value' => '',
                     ],
                 ],
             ],
+
             'multi_quiz' => [
                 'variants' => [
                     [
-                        'id' => 1,
-                        'itemNumber' => 1,
+                        'id' => '1',
+                        'itemNumber' => '1',
                         'title' => '',
                     ],
                     [
-                        'id' => 2,
-                        'itemNumber' => 2,
+                        'id' => '2',
+                        'itemNumber' => '2',
                         'title' => '',
                     ],
                 ],
@@ -708,11 +709,11 @@ class Task extends Model
                 ],
                 'variants' => [
                     [
-                        'id' => 1,
+                        'id' => '1',
                         'content' => '',
                     ],
                     [
-                        'id' => 2,
+                        'id' => '2',
                         'content' => '',
                     ],
                 ],
@@ -720,17 +721,17 @@ class Task extends Model
             'single_quiz' => [
                 'variants' => [
                     [
-                        'id' => 1,
-                        'itemNumber' => 1,
+                        'id' => '1',
+                        'itemNumber' => '1',
                         'title' => '',
                     ],
                     [
-                        'id' => 2,
-                        'itemNumber' => 2,
+                        'id' => '2',
+                        'itemNumber' => '2',
                         'title' => '',
                     ],
                 ],
-                'correctVariantId' => 1,
+                'correctVariantId' => '1',
             ],
             'word_by_image' => [
                 'id' => '',
@@ -738,7 +739,7 @@ class Task extends Model
                 'imageUrl' => '',
                 'availableLetters' => [
                     [
-                        'id' => 1,
+                        'id' => 'letter-1',
                         'letter' => '',
                     ],
                 ],
@@ -750,14 +751,14 @@ class Task extends Model
             'drag_word_to_pocket' => [
                 'items' => [
                     [
-                        'id' => 1,
+                        'id' => 'item-1',
                         'imageUrl' => '',
-                        'correctVariantId' => 1,
+                        'correctVariantId' => 'variant-1',
                     ],
                 ],
                 'variants' => [
                     [
-                        'id' => 1,
+                        'id' => 'variant-1',
                         'value' => '',
                     ],
                 ],
@@ -765,14 +766,14 @@ class Task extends Model
             'phrase_image_matcher' => [
                 'items' => [
                     [
-                        'id' => 1,
-                        'correctVariantId' => 1,
+                        'id' => 'item-1',
+                        'correctVariantId' => 'variant-1',
                         'imageUrl' => '',
                     ],
                 ],
                 'variants' => [
                     [
-                        'id' => 1,
+                        'id' => 'variant-1',
                         'value' => '',
                     ],
                 ],
@@ -1150,340 +1151,395 @@ class Task extends Model
     }
     // новые функции проверки
     private function checkAccentTrainer(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer();
+    {
+        $correct = $this->getCorrectAnswer();
 
-    if (!is_array($userAnswer) || !is_array($correct)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($correct)) {
-        return false;
-    }
-
-    sort($userAnswer);
-    sort($correct);
-
-    return $userAnswer === $correct;
-}
-private function checkSingleSelectImageQuiz(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer();
-
-    if ($correct === null) {
-        return false;
-    }
-
-    return $userAnswer === $correct;
-}
-private function checkFixSentence(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer();
-
-    if ($correct === null || !is_string($userAnswer)) {
-        return false;
-    }
-
-    return trim($userAnswer) === trim($correct);
-}
-private function checkAlphabeticSorter(mixed $userAnswer): bool
-{
-    $slots = $this->getCorrectAnswer();
-
-    if (!is_array($userAnswer) || !is_array($slots) || count($userAnswer) !== count($slots)) {
-        return false;
-    }
-    $userAnswersFlattened = collect($userAnswer)->collapse()->map('trim')->toArray();
-    return collect($slots)->every(function ($slot) use ($userAnswersFlattened) {
-        $slotId = $slot['id'] ?? '';
-        if (!isset($userAnswersFlattened[$slotId])) {
+        if (!is_array($userAnswer) || !is_array($correct)) {
             return false;
         }
 
-        $userVal = $userAnswersFlattened[$slotId];
-        $correctVal = trim($slot['correctValue'] ?? '');
-
-        return mb_strtolower($userVal, 'UTF-8') === mb_strtolower($correctVal, 'UTF-8');
-    });
-}
-private function checkCategoryMatcher(mixed $userAnswer): bool
-{
-    $items = $this->getCorrectAnswer();
-    if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
-        return false;
-    }
-    $userAnswersFlattened = collect($userAnswer)->collapse()->map('trim')->toArray();
-
-    return collect($items)->every(function ($item) use ($userAnswersFlattened) {
-        $itemId = $item['id'] ?? '';
-
-        if (!isset($userAnswersFlattened[$itemId])) {
+        if (count($userAnswer) !== count($correct)) {
             return false;
         }
 
-        return trim($userAnswersFlattened[$itemId]) === trim($item['correct'] ?? '');
-    });
-}
+        $userAnswer = array_map('strval', $userAnswer);
+        $correct = array_map('strval', $correct);
 
-private function checkColorizeWords(mixed $userAnswer): bool
-{
-    $variants = $this->getCorrectAnswer();
+        sort($userAnswer);
+        sort($correct);
 
-    if (!is_array($userAnswer) || !is_array($variants)) {
-        return false;
+        return $userAnswer === $correct;
     }
+    private function checkSingleSelectImageQuiz(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
 
-    if (count($userAnswer) !== count($variants)) {
-        return false;
-    }
-
-    foreach ($variants as $variant) {
-        $variantId = $variant['id'] ?? null;
-        $correctColor = $variant['correctColor'] ?? '';
-
-        if (!isset($userAnswer[$variantId]) || trim($userAnswer[$variantId]) !== trim($correctColor)) {
+        if ($correct === null || $userAnswer === null) {
             return false;
         }
+        return (string) $userAnswer === (string) $correct;
+    }
+    private function checkFixSentence(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null) {
+            return false;
+        }
+
+        return trim((string) $userAnswer) === trim((string) $correct);
+    }
+    private function checkAlphabeticSorter(mixed $userAnswer): bool
+    {
+        $slots = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($slots) || count($userAnswer) !== count($slots)) {
+            return false;
+        }
+
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($slots)->every(function ($slot) use ($userAnswersFlattened) {
+            $slotId = isset($slot['id']) ? (string) $slot['id'] : '';
+            if (!isset($userAnswersFlattened[$slotId])) {
+                return false;
+            }
+            $userVal = $userAnswersFlattened[$slotId];
+            $correctVal = trim((string) ($slot['correctValue'] ?? ''));
+
+            return mb_strtolower($userVal, 'UTF-8') === mb_strtolower($correctVal, 'UTF-8');
+        });
+    }
+    private function checkCategoryMatcher(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($items)->every(function ($item) use ($userAnswersFlattened) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+
+            if (!isset($userAnswersFlattened[$itemId])) {
+                return false;
+            }
+
+            $userVal = $userAnswersFlattened[$itemId];
+            $correctVal = trim((string) ($item['correct'] ?? ''));
+
+            return $userVal === $correctVal;
+        });
     }
 
-    return true;
-}
-private function checkConclusion(mixed $userAnswer): bool
-{
-    $data = $this->getCorrectAnswer(); // Массив data
+    private function checkColorizeWords(mixed $userAnswer): bool
+    {
+        $variants = $this->getCorrectAnswer();
 
-    if (!is_array($userAnswer) || !is_array($data)) {
-        return false;
+        if (!is_array($userAnswer) || !is_array($variants) || count($userAnswer) !== count($variants)) {
+            return false;
+        }
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($variants)->every(function ($variant) use ($userAnswersFlattened) {
+            $variantId = isset($variant['id']) ? (string) $variant['id'] : '';
+
+            if (!isset($userAnswersFlattened[$variantId])) {
+                return false;
+            }
+
+            $userColor = $userAnswersFlattened[$variantId];
+            $correctColor = trim((string) ($variant['correctColor'] ?? ''));
+
+            return mb_strtolower($userColor, 'UTF-8') === mb_strtolower($correctColor, 'UTF-8');
+        });
+    }
+    private function checkConclusion(mixed $userAnswer): bool
+    {
+        $data = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($data)) {
+            return false;
+        }
+
+        $expectedSlots = collect($data)
+            ->pluck('slots')
+            ->collapse()
+            ->associateBy(
+                fn($slot) => isset($slot['id']) ? (string) $slot['id'] : '',
+                fn($slot) => trim((string) ($slot['correct'] ?? ''))
+            )
+            ->filter(fn($val, $key) => $key !== '')
+            ->toArray();
+
+        if (count($userAnswer) !== count($expectedSlots)) {
+            return false;
+        }
+
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($expectedSlots)->every(function ($correctValue, $slotId) use ($userAnswersFlattened) {
+            $slotId = (string) $slotId;
+
+            if (!isset($userAnswersFlattened[$slotId])) {
+                return false;
+            }
+
+            return mb_strtolower($userAnswersFlattened[$slotId], 'UTF-8') === mb_strtolower($correctValue, 'UTF-8');
+        });
+    }
+    private function checkDeleteExtraLetter(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswerCleaned = array_map(fn($id) => trim((string) $id), $userAnswer);
+        $correctCleaned = array_map(fn($id) => trim((string) $id), $correct);
+
+        sort($userAnswerCleaned);
+        sort($correctCleaned);
+
+        return $userAnswerCleaned === $correctCleaned;
+    }
+    private function checkDropWordToImage(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+        return collect($items)->every(function ($item) use ($stringUserAnswer) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+            if (!isset($stringUserAnswer[$itemId])) {
+                return false;
+            }
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            return $stringUserAnswer[$itemId] === $correctVariantId;
+        });
     }
 
-    // Собираем плоский список всех правильных ответов: [slotId => correct]
-    $expectedSlots = [];
-    foreach ($data as $item) {
-        if (!empty($item['slots']) && is_array($item['slots'])) {
-            foreach ($item['slots'] as $slot) {
-                if (isset($slot['id'])) {
-                    $expectedSlots[$slot['id']] = $slot['correct'] ?? '';
-                }
+    private function checkDropWordToText(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        // Нормализуем пользовательский ответ: приводим ключи и значения к строкам
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($items as $item) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+
+            // Поддерживаем camelCase и snake_case для гибкости
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            if (!isset($stringUserAnswer[$itemId]) || $stringUserAnswer[$itemId] !== $correctVariantId) {
+                return false;
             }
         }
+
+        return true;
     }
 
-    if (count($userAnswer) !== count($expectedSlots)) {
-        return false;
-    }
+    private function checkReorderItems(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
 
-    foreach ($expectedSlots as $slotId => $correctValue) {
-        if (!isset($userAnswer[$slotId]) || trim($userAnswer[$slotId]) !== trim($correctValue)) {
+        if (!is_array($userAnswer) || !is_array($correct)) {
             return false;
         }
-    }
 
-    return true;
-}
-private function checkDeleteExtraLetter(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer();
-
-    if (!is_array($userAnswer) || !is_array($correct)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($correct)) {
-        return false;
-    }
-
-    sort($userAnswer);
-    sort($correct);
-
-    return $userAnswer === $correct;
-}
-private function checkDropWordToImage(mixed $userAnswer): bool
-{
-    $items = $this->getCorrectAnswer();
-
-    if (!is_array($userAnswer) || !is_array($items)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($items)) {
-        return false;
-    }
-
-    foreach ($items as $item) {
-        $itemId = $item['id'] ?? null;
-        $correctVariantId = $item['correctVariantId'] ?? null;
-
-        if (!isset($userAnswer[$itemId]) || (int)$userAnswer[$itemId] !== (int)$correctVariantId) {
+        if (count($userAnswer) !== count($correct)) {
             return false;
         }
+
+        $userAnswerCleaned = array_map(fn($id) => trim((string) $id), $userAnswer);
+        $correctCleaned = array_map(fn($id) => trim((string) $id), $correct);
+
+        return array_values($userAnswerCleaned) === array_values($correctCleaned);
     }
+    private function checkMultiQuiz(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
 
-    return true;
-}
-private function checkDropWordToText(mixed $userAnswer): bool
-{
-    $items = $this->getCorrectAnswer();
-
-    if (!is_array($userAnswer) || !is_array($items)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($items)) {
-        return false;
-    }
-
-    foreach ($items as $item) {
-        $itemId = $item['id'] ?? null;
-        $correctVariantId = $item['correctVariantId'] ?? null;
-
-        if (!isset($userAnswer[$itemId]) || (int)$userAnswer[$itemId] !== (int)$correctVariantId) {
+        if (!is_array($userAnswer) || !is_array($correct)) {
             return false;
         }
-    }
 
-    return true;
-}
-private function checkReorderItems(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer(); // Массив correctOrderIds
-
-    if (!is_array($userAnswer) || !is_array($correct)) {
-        return false;
-    }
-
-    return $userAnswer === $correct;
-}
-private function checkMultiQuiz(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer();
-
-    if (!is_array($userAnswer) || !is_array($correct)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($correct)) {
-        return false;
-    }
-
-    // Приводим элементы к integer для надежности сравнения
-    $userAnswer = array_map('intval', $userAnswer);
-    $correct = array_map('intval', $correct);
-
-    sort($userAnswer);
-    sort($correct);
-
-    return $userAnswer === $correct;
-}
-private function checkPhraseImageMatcher(mixed $userAnswer): bool
-{
-    $items = $this->getCorrectAnswer(); // Массив items
-
-    if (!is_array($userAnswer) || !is_array($items)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($items)) {
-        return false;
-    }
-
-    foreach ($items as $item) {
-        $itemId = $item['id'] ?? null;
-        $correctVariantId = $item['correctVariantId'] ?? null;
-
-        if (!isset($userAnswer[$itemId]) || (int)$userAnswer[$itemId] !== (int)$correctVariantId) {
+        if (count($userAnswer) !== count($correct)) {
             return false;
         }
+
+        $userAnswer = array_map(fn($id) => trim((string) $id), $userAnswer);
+        $correct = array_map(fn($id) => trim((string) $id), $correct);
+
+        sort($userAnswer);
+        sort($correct);
+
+        return $userAnswer === $correct;
     }
+    private function checkPhraseImageMatcher(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
 
-    return true;
-}
-private function checkSequenceBuilder(mixed $userAnswer): bool
-{
-    $slots = $this->getCorrectAnswer();
-
-    if (!is_array($userAnswer) || !is_array($slots)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($slots)) {
-        return false;
-    }
-
-    foreach ($slots as $slot) {
-        $slotId = $slot['slotId'] ?? null;
-        $correctValue = $slot['correctValue'] ?? '';
-
-        if (!isset($userAnswer[$slotId]) || trim($userAnswer[$slotId]) !== trim($correctValue)) {
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
             return false;
         }
+
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($items as $item) {
+            if (!isset($item['id'])) {
+                return false;
+            }
+
+            $itemId = (string) $item['id'];
+
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            if (!isset($stringUserAnswer[$itemId]) || $stringUserAnswer[$itemId] !== $correctVariantId) {
+                return false;
+            }
+        }
+
+        return true;
     }
+    private function checkSequenceBuilder(mixed $userAnswer): bool
+    {
+        $slots = $this->getCorrectAnswer();
 
-    return true;
-}
-private function checkSingleQuiz(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer(); // Число correctVariantId
-
-    if ($correct === null || $userAnswer === null) {
-        return false;
-    }
-
-    return (int)$userAnswer === (int)$correct;
-}
-private function checkWordByImage(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer();
-
-    if ($correct === null || !is_string($userAnswer)) {
-        return false;
-    }
-
-    return mb_strtolower(trim($userAnswer)) === mb_strtolower(trim($correct));
-}
-private function checkWordPicker(mixed $userAnswer): bool
-{
-    $correct = $this->getCorrectAnswer(); // Массив correctValues
-
-    if (!is_array($userAnswer) || !is_array($correct)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($correct)) {
-        return false;
-    }
-
-    // Приводим все строки к нижнему регистру и очищаем от пробелов
-    $userAnswer = array_map('mb_strtolower', array_map('trim', $userAnswer));
-    $correct = array_map('mb_strtolower', array_map('trim', $correct));
-
-    sort($userAnswer);
-    sort($correct);
-
-    return $userAnswer === $correct;
-}
-private function checkDragWordToPocket(mixed $userAnswer): bool
-{
-    $items = $this->getCorrectAnswer(); // Массив items
-
-    if (!is_array($userAnswer) || !is_array($items)) {
-        return false;
-    }
-
-    if (count($userAnswer) !== count($items)) {
-        return false;
-    }
-
-    foreach ($items as $item) {
-        $itemId = $item['id'] ?? null;
-        $correctVariantId = $item['correctVariantId'] ?? null;
-
-        if (!isset($userAnswer[$itemId]) || (int)$userAnswer[$itemId] !== (int)$correctVariantId) {
+        if (!is_array($userAnswer) || !is_array($slots)) {
             return false;
         }
+
+        if (count($userAnswer) !== count($slots)) {
+            return false;
+        }
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($slots as $slot) {
+            $slotId = isset($slot['slotId']) ? (string) $slot['slotId'] : '';
+            $correctValue = trim((string) ($slot['correctValue'] ?? ''));
+
+            if (!isset($stringUserAnswer[$slotId]) || $stringUserAnswer[$slotId] !== $correctValue) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    private function checkSingleQuiz(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null || $userAnswer === null) {
+            return false;
+        }
+        return trim((string) $userAnswer) === trim((string) $correct);
     }
 
-    return true;
-}
+
+    private function checkWordByImage(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null) {
+            return false;
+        }
+
+        $userVal = mb_strtolower(trim((string) $userAnswer), 'UTF-8');
+        $correctVal = mb_strtolower(trim((string) $correct), 'UTF-8');
+
+        return $userVal === $correctVal;
+    }
+
+    private function checkWordPicker(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswerCleaned = array_map(fn($val) => mb_strtolower(trim((string) $val), 'UTF-8'), $userAnswer);
+        $correctCleaned = array_map(fn($val) => mb_strtolower(trim((string) $val), 'UTF-8'), $correct);
+
+        sort($userAnswerCleaned);
+        sort($correctCleaned);
+
+        return $userAnswerCleaned === $correctCleaned;
+    }
+    private function checkDragWordToPocket(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($items as $item) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            if (!isset($stringUserAnswer[$itemId]) || $stringUserAnswer[$itemId] !== $correctVariantId) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     // ============================================================
     // 📊 СТАТИСТИКА
     // ============================================================
