@@ -308,6 +308,25 @@ class Task extends Model
             'find_by_condition' => $this->config['condition']['correct_indices'] ?? [],
             'match_behavior' => $this->config['items'] ?? [],
             'build_dialogue' => $this->config['dialogues'] ?? [],
+            // новые
+            'accent_trainer' => $this->config['correct_variant_ids'] ?? [],
+            'single_select_image_quiz' => $this->config['correct_variant_id'] ?? null,
+            'fix_sentence' => $this->config['correctAnswer'] ?? null,
+            'alphabetic_sorter' => $this->config['slots'] ?? [],
+            'category_matcher' => $this->config['items'] ?? [],
+            'colorize_words' => $this->config['variants'] ?? [],
+            'conclusion' => $this->config['data'] ?? [],
+            'delete_extra_letter' => $this->config['correctVariantIds'] ?? [],
+            'drop_word_to_image' => $this->config['items'] ?? [],
+            'drop_word_to_text' => $this->config['items'] ?? [],
+            'multi_quiz' => $this->config['correctVariantIds'] ?? [],
+            'reorder_items' => $this->config['correctOrderIds'] ?? [],
+            'sequence_builder' => $this->config['slots'] ?? [],
+            'single_quiz' => $this->config['correctVariantId'] ?? null,
+            'word_by_image' => $this->config['correctAnswer'] ?? null,
+            'word_picker' => $this->config['correctValues'] ?? [],
+            'drag_word_to_pocket' => $this->config['items'] ?? [],
+            'phrase_image_matcher' => $this->config['items'] ?? [],
             default => null,
         };
     }
@@ -522,6 +541,243 @@ class Task extends Model
                 'shuffle_options' => true,
                 'show_speakers' => true,
             ],
+            // Дополнительные конфиги
+            'accent_trainer' => [
+                'variants' => [
+                    ['id' => '1', 'letter' => ''],
+                    ['id' => '2', 'letter' => ''],
+                ],
+                'correct_variant_ids' => [],
+                'shuffle_variants' => true,
+            ],
+            'single_select_image_quiz' => [
+                'variants' => [
+                    ['id' => '1', 'imageUrl' => ''],
+                    ['id' => '2', 'imageUrl' => ''],
+                ],
+                'correct_variant_id' => '1',
+                'shuffle_variants' => true,
+            ],
+            'fix_sentence' => [
+                'sentence' => '',
+                'words' => [''],
+                'correctAnswer' => '',
+            ],
+            'alphabetic_sorter' => [
+                'slots' => [
+                    ['id' => 'slot-1', 'correctValue' => '', 'slotTitle' => ''],
+                ],
+                'variants' => [
+                    ['id' => 'variant-1', 'value' => ''],
+                ],
+            ],
+            'category_matcher' => [
+                'items' => [
+                    [
+                        'id' => '',
+                        'label' => '',
+                        'correct' => '',
+                        'color' => '',
+                    ],
+                ],
+                'categories' => [
+                    [
+                        'id' => '',
+                        'label' => '',
+                        'color' => '',
+                    ],
+                ],
+            ],
+            'colorize_words' => [
+                'tools' => [
+                    [
+                        'type' => '',
+                        'toolName' => '',
+                        'toolColor' => null,
+                    ],
+                ],
+                'variants' => [
+                    [
+                        'id' => 'var-1',
+                        'content' => '',
+                        'correctColor' => '',
+                    ],
+                ],
+            ],
+            'conclusion' => [
+                'data' => [
+                    [
+                        'id' => 'conclusion-1',
+                        'value' => '',
+                        'completed' => false,
+                        'variants' => [
+                            [
+                                'id' => 'variant-1',
+                                'value' => '',
+                            ],
+                        ],
+                        'slots' => [
+                            [
+                                'id' => 'slot-1',
+                                'current' => null,
+                                'correct' => '',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'delete_extra_letter' => [
+                'variants' => [
+                    [
+                        'id' => '',
+                        'letter' => '',
+                    ],
+                ],
+                'correctVariantIds' => [''],
+            ],
+            'drop_word_to_image' => [
+                'items' => [
+                    [
+                        'id' => 'item-1',
+                        'imageUrl' => '',
+                        'correctVariantId' => 'var-1',
+                    ],
+                ],
+                'variants' => [
+                    [
+                        'id' => 'var-1',
+                        'value' => '',
+                    ],
+                ],
+            ],
+            'drop_word_to_text' => [
+                'items' => [
+                    [
+                        'id' => 'item-1',
+                        'content' => '',
+                        'correctVariantId' => 'variant-1',
+                    ],
+                ],
+                'variants' => [
+                    [
+                        'id' => 'variant-1',
+                        'value' => '',
+                    ],
+                ],
+            ],
+
+            'multi_quiz' => [
+                'variants' => [
+                    [
+                        'id' => '1',
+                        'itemNumber' => '1',
+                        'title' => '',
+                    ],
+                    [
+                        'id' => '2',
+                        'itemNumber' => '2',
+                        'title' => '',
+                    ],
+                ],
+                'correctVariantIds' => [],
+            ],
+            'reorder_items' => [
+                'data' => [
+                    [
+                        'id' => '',
+                        'content' => '',
+                    ],
+                    [
+                        'id' => '',
+                        'content' => '',
+                    ],
+                ],
+                'correctOrderIds' => ['', ''],
+            ],
+            'sequence_builder' => [
+                'slots' => [
+                    [
+                        'slotId' => '',
+                        'content' => '',
+                        'correctValue' => '',
+                    ],
+                    [
+                        'slotId' => '',
+                        'content' => '',
+                        'correctValue' => '',
+                    ],
+                ],
+                'variants' => [
+                    [
+                        'id' => '1',
+                        'content' => '',
+                    ],
+                    [
+                        'id' => '2',
+                        'content' => '',
+                    ],
+                ],
+            ],
+            'single_quiz' => [
+                'variants' => [
+                    [
+                        'id' => '1',
+                        'itemNumber' => '1',
+                        'title' => '',
+                    ],
+                    [
+                        'id' => '2',
+                        'itemNumber' => '2',
+                        'title' => '',
+                    ],
+                ],
+                'correctVariantId' => '1',
+            ],
+            'word_by_image' => [
+                'id' => '',
+                'correctAnswer' => '',
+                'imageUrl' => '',
+                'availableLetters' => [
+                    [
+                        'id' => 'letter-1',
+                        'letter' => '',
+                    ],
+                ],
+            ],
+            'word_picker' => [
+                'text' => '',
+                'correctValues' => [''],
+            ],
+            'drag_word_to_pocket' => [
+                'items' => [
+                    [
+                        'id' => 'item-1',
+                        'imageUrl' => '',
+                        'correctVariantId' => 'variant-1',
+                    ],
+                ],
+                'variants' => [
+                    [
+                        'id' => 'variant-1',
+                        'value' => '',
+                    ],
+                ],
+            ],
+            'phrase_image_matcher' => [
+                'items' => [
+                    [
+                        'id' => 'item-1',
+                        'correctVariantId' => 'variant-1',
+                        'imageUrl' => '',
+                    ],
+                ],
+                'variants' => [
+                    [
+                        'id' => 'variant-1',
+                        'value' => '',
+                    ],
+                ],
+            ],
             default => [],
         };
     }
@@ -600,6 +856,26 @@ class Task extends Model
             'find_by_condition' => $this->checkFindByCondition($userAnswer),
             'match_behavior' => $this->checkMatchBehavior($userAnswer),
             'build_dialogue' => $this->checkBuildDialogue($userAnswer),
+            // другие задания
+            //новые
+            'accent_trainer' => $this->checkAccentTrainer($userAnswer),
+            'single_select_image_quiz' => $this->checkSingleSelectImageQuiz($userAnswer),
+            'fix_sentence' => $this->checkFixSentence($userAnswer),
+            'alphabetic_sorter' => $this->checkAlphabeticSorter($userAnswer),
+            'category_matcher' => $this->checkCategoryMatcher($userAnswer),
+            'colorize_words' => $this->checkColorizeWords($userAnswer),
+            'conclusion' => $this->checkConclusion($userAnswer),
+            'delete_extra_letter' => $this->checkDeleteExtraLetter($userAnswer),
+            'drop_word_to_image' => $this->checkDropWordToImage($userAnswer),
+            'drop_word_to_text' => $this->checkDropWordToText($userAnswer),
+            'multi_quiz' => $this->checkMultiQuiz($userAnswer),
+            'reorder_items' => $this->checkReorderItems($userAnswer),
+            'phrase_image_matcher' => $this->checkPhraseImageMatcher($userAnswer),
+            'sequence_builder' => $this->checkSequenceBuilder($userAnswer),
+            'single_quiz' => $this->checkSingleQuiz($userAnswer),
+            'word_by_image' => $this->checkWordByImage($userAnswer),
+            'word_picker' => $this->checkWordPicker($userAnswer),
+            'drag_word_to_pocket' => $this->checkDragWordToPocket($userAnswer),
             default => false,
         };
     }
@@ -662,7 +938,7 @@ class Task extends Model
     private function checkStressMark($userAnswer): bool
     {
         $correctIndex = $this->config['correct_index'] ?? -1;
-        return (int)$userAnswer === $correctIndex;
+        return (int) $userAnswer === $correctIndex;
     }
 
     private function checkDragDropText($userAnswer): bool
@@ -794,7 +1070,7 @@ class Task extends Model
     private function checkFindExtraLetter($userAnswer): bool
     {
         $correctIndex = $this->config['correct_index'] ?? -1;
-        return (int)$userAnswer === $correctIndex;
+        return (int) $userAnswer === $correctIndex;
     }
 
     private function checkConnectCategory($userAnswer): bool
@@ -873,7 +1149,397 @@ class Task extends Model
 
         return true;
     }
+    // новые функции проверки
+    private function checkAccentTrainer(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
 
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswer = array_map('strval', $userAnswer);
+        $correct = array_map('strval', $correct);
+
+        sort($userAnswer);
+        sort($correct);
+
+        return $userAnswer === $correct;
+    }
+    private function checkSingleSelectImageQuiz(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null || $userAnswer === null) {
+            return false;
+        }
+        return (string) $userAnswer === (string) $correct;
+    }
+    private function checkFixSentence(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null) {
+            return false;
+        }
+
+        return trim((string) $userAnswer) === trim((string) $correct);
+    }
+    private function checkAlphabeticSorter(mixed $userAnswer): bool
+    {
+        $slots = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($slots) || count($userAnswer) !== count($slots)) {
+            return false;
+        }
+
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($slots)->every(function ($slot) use ($userAnswersFlattened) {
+            $slotId = isset($slot['id']) ? (string) $slot['id'] : '';
+            if (!isset($userAnswersFlattened[$slotId])) {
+                return false;
+            }
+            $userVal = $userAnswersFlattened[$slotId];
+            $correctVal = trim((string) ($slot['correctValue'] ?? ''));
+
+            return mb_strtolower($userVal, 'UTF-8') === mb_strtolower($correctVal, 'UTF-8');
+        });
+    }
+    private function checkCategoryMatcher(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($items)->every(function ($item) use ($userAnswersFlattened) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+
+            if (!isset($userAnswersFlattened[$itemId])) {
+                return false;
+            }
+
+            $userVal = $userAnswersFlattened[$itemId];
+            $correctVal = trim((string) ($item['correct'] ?? ''));
+
+            return $userVal === $correctVal;
+        });
+    }
+
+    private function checkColorizeWords(mixed $userAnswer): bool
+    {
+        $variants = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($variants) || count($userAnswer) !== count($variants)) {
+            return false;
+        }
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($variants)->every(function ($variant) use ($userAnswersFlattened) {
+            $variantId = isset($variant['id']) ? (string) $variant['id'] : '';
+
+            if (!isset($userAnswersFlattened[$variantId])) {
+                return false;
+            }
+
+            $userColor = $userAnswersFlattened[$variantId];
+            $correctColor = trim((string) ($variant['correctColor'] ?? ''));
+
+            return mb_strtolower($userColor, 'UTF-8') === mb_strtolower($correctColor, 'UTF-8');
+        });
+    }
+    private function checkConclusion(mixed $userAnswer): bool
+    {
+        $data = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($data)) {
+            return false;
+        }
+
+        $expectedSlots = collect($data)
+            ->pluck('slots')
+            ->collapse()
+            ->associateBy(
+                fn($slot) => isset($slot['id']) ? (string) $slot['id'] : '',
+                fn($slot) => trim((string) ($slot['correct'] ?? ''))
+            )
+            ->filter(fn($val, $key) => $key !== '')
+            ->toArray();
+
+        if (count($userAnswer) !== count($expectedSlots)) {
+            return false;
+        }
+
+        $userAnswersFlattened = collect($userAnswer)
+            ->collapse()
+            ->map(fn($val) => trim((string) $val))
+            ->toArray();
+
+        return collect($expectedSlots)->every(function ($correctValue, $slotId) use ($userAnswersFlattened) {
+            $slotId = (string) $slotId;
+
+            if (!isset($userAnswersFlattened[$slotId])) {
+                return false;
+            }
+
+            return mb_strtolower($userAnswersFlattened[$slotId], 'UTF-8') === mb_strtolower($correctValue, 'UTF-8');
+        });
+    }
+    private function checkDeleteExtraLetter(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswerCleaned = array_map(fn($id) => trim((string) $id), $userAnswer);
+        $correctCleaned = array_map(fn($id) => trim((string) $id), $correct);
+
+        sort($userAnswerCleaned);
+        sort($correctCleaned);
+
+        return $userAnswerCleaned === $correctCleaned;
+    }
+    private function checkDropWordToImage(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+        return collect($items)->every(function ($item) use ($stringUserAnswer) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+            if (!isset($stringUserAnswer[$itemId])) {
+                return false;
+            }
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            return $stringUserAnswer[$itemId] === $correctVariantId;
+        });
+    }
+
+    private function checkDropWordToText(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        // Нормализуем пользовательский ответ: приводим ключи и значения к строкам
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($items as $item) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+
+            // Поддерживаем camelCase и snake_case для гибкости
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            if (!isset($stringUserAnswer[$itemId]) || $stringUserAnswer[$itemId] !== $correctVariantId) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function checkReorderItems(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswerCleaned = array_map(fn($id) => trim((string) $id), $userAnswer);
+        $correctCleaned = array_map(fn($id) => trim((string) $id), $correct);
+
+        return array_values($userAnswerCleaned) === array_values($correctCleaned);
+    }
+    private function checkMultiQuiz(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswer = array_map(fn($id) => trim((string) $id), $userAnswer);
+        $correct = array_map(fn($id) => trim((string) $id), $correct);
+
+        sort($userAnswer);
+        sort($correct);
+
+        return $userAnswer === $correct;
+    }
+    private function checkPhraseImageMatcher(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($items as $item) {
+            if (!isset($item['id'])) {
+                return false;
+            }
+
+            $itemId = (string) $item['id'];
+
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            if (!isset($stringUserAnswer[$itemId]) || $stringUserAnswer[$itemId] !== $correctVariantId) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    private function checkSequenceBuilder(mixed $userAnswer): bool
+    {
+        $slots = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($slots)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($slots)) {
+            return false;
+        }
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($slots as $slot) {
+            $slotId = isset($slot['slotId']) ? (string) $slot['slotId'] : '';
+            $correctValue = trim((string) ($slot['correctValue'] ?? ''));
+
+            if (!isset($stringUserAnswer[$slotId]) || $stringUserAnswer[$slotId] !== $correctValue) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    private function checkSingleQuiz(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null || $userAnswer === null) {
+            return false;
+        }
+        return trim((string) $userAnswer) === trim((string) $correct);
+    }
+
+
+    private function checkWordByImage(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if ($correct === null) {
+            return false;
+        }
+
+        $userVal = mb_strtolower(trim((string) $userAnswer), 'UTF-8');
+        $correctVal = mb_strtolower(trim((string) $correct), 'UTF-8');
+
+        return $userVal === $correctVal;
+    }
+
+    private function checkWordPicker(mixed $userAnswer): bool
+    {
+        $correct = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($correct)) {
+            return false;
+        }
+
+        if (count($userAnswer) !== count($correct)) {
+            return false;
+        }
+
+        $userAnswerCleaned = array_map(fn($val) => mb_strtolower(trim((string) $val), 'UTF-8'), $userAnswer);
+        $correctCleaned = array_map(fn($val) => mb_strtolower(trim((string) $val), 'UTF-8'), $correct);
+
+        sort($userAnswerCleaned);
+        sort($correctCleaned);
+
+        return $userAnswerCleaned === $correctCleaned;
+    }
+    private function checkDragWordToPocket(mixed $userAnswer): bool
+    {
+        $items = $this->getCorrectAnswer();
+
+        if (!is_array($userAnswer) || !is_array($items) || count($userAnswer) !== count($items)) {
+            return false;
+        }
+
+        $stringUserAnswer = [];
+        foreach ($userAnswer as $key => $val) {
+            $stringUserAnswer[(string) $key] = trim((string) $val);
+        }
+
+        foreach ($items as $item) {
+            $itemId = isset($item['id']) ? (string) $item['id'] : '';
+
+            $correctVariantId = $item['correctVariantId'] ?? $item['correct_variant_id'] ?? '';
+            $correctVariantId = trim((string) $correctVariantId);
+
+            if (!isset($stringUserAnswer[$itemId]) || $stringUserAnswer[$itemId] !== $correctVariantId) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     // ============================================================
     // 📊 СТАТИСТИКА
     // ============================================================
