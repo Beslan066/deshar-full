@@ -293,8 +293,9 @@ class IndexController extends Controller
         $defaultConfig = $taskType->default_config ?? [];
 
         return response()->json([
+            'slug' => $taskType->slug,
             'config' => $defaultConfig,
-            'validation_rules' => $taskType->getValidationRules(),
+            'validation_rules' => $taskType->getValidationRules($taskType->slug),
         ]);
     }
 
@@ -306,4 +307,21 @@ class IndexController extends Controller
         json_decode($string);
         return json_last_error() === JSON_ERROR_NONE;
     }
+
+    public function uploadConfigImage(Request $request)
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+    ]);
+
+    if ($request->hasFile('image')) {
+        $path = $request->file('image')->store('tasks', 'public');
+
+        return response()->json([
+            'url' => Storage::url($path)
+        ]);
+    }
+
+    return response()->json(['error' => 'Файл не загружен'], 400);
+}
 }
