@@ -1,4 +1,4 @@
-import { escapeHtml,bindImageUpload, generateId } from "../helpers.js";
+import { escapeHtml,bindImageUpload, generateId, createTextareaUpdaters } from "../helpers.js";
 
 export function renderSingleSelectImageQuiz(config) {
     console.log('renderSingleSelectImageQuiz');
@@ -212,26 +212,7 @@ export function renderSingleSelectImageQuiz(config) {
 
         updateTextareaAndFullRender();
     };
-
-    function updateTextareaAndFullRender() {
-        const textarea = document.getElementById('configJsonTextarea');
-        if (textarea) {
-            textarea.value = JSON.stringify(config, null, 2);
-        }
-        renderVariants();
-        if (typeof window.updateJsonPreview === 'function') {
-            window.updateJsonPreview();
-        }
-    }
-
-    function updateTextareaWithoutFullRender() {
-        const textarea = document.getElementById('configJsonTextarea');
-        if (textarea) {
-            textarea.value = JSON.stringify(config, null, 2);
-        }
-        if (typeof window.updateJsonPreview === 'function') {
-            window.updateJsonPreview();
-        }
-    }
+ const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
+        createTextareaUpdaters(config, renderVariants);
     renderVariants();
 }

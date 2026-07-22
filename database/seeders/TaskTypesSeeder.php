@@ -29,7 +29,6 @@ class TaskTypesSeeder extends Seeder
                         ['id' => '6', 'letter' => 'О'],
                     ],
                     'correct_variant_ids' => ['2'],
-                    'shuffle_variants' => true,
                 ],
                 'is_active' => true,
                 'sort_order' => 14,

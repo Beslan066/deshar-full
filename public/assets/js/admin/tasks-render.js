@@ -1,9 +1,15 @@
 // ============================================================
 // tasks-render.js - Полный скрипт для создания заданий
 
+import { renderAccentTrainer } from "./renderFunctions/renderAccentTrainer.js";
+import { renderAlphabeticSorter } from "./renderFunctions/renderAlphabeticSorter.js";
+import { renderCategoryMatcher } from "./renderFunctions/renderCategoryMatcher.js";
+import { renderColorizeWords } from "./renderFunctions/renderColorizeWords.js";
 import { renderDropWordToImage } from "./renderFunctions/renderDropWordToImage.js";
+import { renderFixSentence } from "./renderFunctions/renderFixSentece.js";
 import { renderSingleSelectImageQuiz } from "./renderFunctions/renderSingleSelectImageQuiz.js";
 import { renderWordByImage } from "./renderFunctions/renderWordByImage.js";
+import { renderWordPicker } from "./renderFunctions/renderWordPicker.js";
 
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -175,14 +181,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const slug = getTypeSlug(typeId);
 
     switch(slug) {
+        case 'accent_trainer':
+            renderAccentTrainer(config);
+            break;
         case 'single_select_image_quiz':
             renderSingleSelectImageQuiz(config);
+            break;
+        case 'fix_sentence':
+            renderFixSentence(config);
+            break;
+        case 'alphabetic_sorter':
+            renderAlphabeticSorter(config);
             break;
         case 'drop_word_to_image':
             renderDropWordToImage(config);
             break;
+        case 'phrase_image_matcher':
+            renderDropWordToImage(config);
+            break;
+        case 'drag_word_to_pocket':
+            renderDropWordToImage(config);
+            break;
+        case 'category_matcher':
+            renderCategoryMatcher(config);
+            break;
         case 'word_by_image':
             renderWordByImage(config)
+            break;
+        case 'colorize_words':
+            renderColorizeWords(config)
+            break;
+        case 'word_picker':
+            renderWordPicker(config);
             break;
         default:
             renderGeneric(config);
