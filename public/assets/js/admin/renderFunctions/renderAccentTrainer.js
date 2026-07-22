@@ -127,7 +127,7 @@ export function renderAccentTrainer(config) {
             });
         });
     }
- const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
+    const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
         createTextareaUpdaters(config, renderVariants);
     addBtn.addEventListener('click', () => {
         config.variants.push({ id: generateId('variant'), letter: '' });

@@ -1,4 +1,4 @@
-import { escapeHtml,bindImageUpload, generateId, createTextareaUpdaters } from "../helpers.js";
+import { escapeHtml, bindImageUpload, generateId, createTextareaUpdaters } from "../helpers.js";
 
 export function renderSingleSelectImageQuiz(config) {
     console.log('renderSingleSelectImageQuiz');
@@ -122,9 +122,9 @@ export function renderSingleSelectImageQuiz(config) {
                     <div class="col-auto" style="width: 50px;">
                         <div class="border rounded text-center bg-light variant-preview" style="height: 38px; width: 45px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                             ${hasImage
-                                ? `<img src="${safeUrl}" style="max-width:100%; max-height:100%; object-fit: cover;">`
-                                : `<i class="bx bx-image text-muted font-size-18"></i>`
-                            }
+                    ? `<img src="${safeUrl}" style="max-width:100%; max-height:100%; object-fit: cover;">`
+                    : `<i class="bx bx-image text-muted font-size-18"></i>`
+                }
                         </div>
                     </div>
 
@@ -171,26 +171,26 @@ export function renderSingleSelectImageQuiz(config) {
             });
         });
 
-       container.querySelectorAll('.variant-item').forEach((variantItem) => {
-    const idx = Number(variantItem.dataset.index);
-    const fileInput = variantItem.querySelector('.variant-file-input');
-    const uploadBtn = variantItem.querySelector('.variant-upload-btn');
+        container.querySelectorAll('.variant-item').forEach((variantItem) => {
+            const idx = Number(variantItem.dataset.index);
+            const fileInput = variantItem.querySelector('.variant-file-input');
+            const uploadBtn = variantItem.querySelector('.variant-upload-btn');
 
-    bindImageUpload(fileInput, uploadBtn, (url) => {
-        const oldId = config.variants[idx].id;
-        const wasCorrect = config.correct_variant_id === oldId;
-        const newId = generateId("variant");
+            bindImageUpload(fileInput, uploadBtn, (url) => {
+                const oldId = config.variants[idx].id;
+                const wasCorrect = config.correct_variant_id === oldId;
+                const newId = generateId("variant");
 
-        config.variants[idx].imageUrl = url;
-        config.variants[idx].id = newId;
+                config.variants[idx].imageUrl = url;
+                config.variants[idx].id = newId;
 
-        if (wasCorrect) {
-            config.correct_variant_id = newId;
-        }
+                if (wasCorrect) {
+                    config.correct_variant_id = newId;
+                }
 
-        updateTextareaAndFullRender();
-    });
-});
+                updateTextareaAndFullRender();
+            });
+        });
     }
 
     window.addQuizVariant = function () {
@@ -212,7 +212,7 @@ export function renderSingleSelectImageQuiz(config) {
 
         updateTextareaAndFullRender();
     };
- const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
+    const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
         createTextareaUpdaters(config, renderVariants);
     renderVariants();
 }

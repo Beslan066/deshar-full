@@ -1,6 +1,6 @@
 import { createTextareaUpdaters, escapeHtml, generateId } from "../helpers.js";
 
-export function renderDeleteExtraLetters(config) {
+export function renderSingleQuiz(config) {
     const editor = document.getElementById('configEditor');
 
     if (!editor) return;
@@ -8,8 +8,8 @@ export function renderDeleteExtraLetters(config) {
     if (!Array.isArray(config.variants)) {
         config.variants = [];
     }
-    if (!Array.isArray(config.correctVariantIds)) {
-        config.correctVariantIds = [];
+    if (!config.correctVariantId) {
+        config.correctVariantId = null;
     }
 
     const html = `
@@ -59,16 +59,21 @@ export function renderDeleteExtraLetters(config) {
         }
 
         variantsContainer.innerHTML = config.variants.map((variant, index) => {
-            const safeContent = escapeHtml(variant.letter ?? '');
-            const isCorrect = config.correctVariantIds.includes(variant.id);
+            const safeContent = escapeHtml(variant.title ?? '');
+            const isCorrect = config.correctVariantId === variant.id;
             return `
              <div class="variant-item row g-2 align-items-center border-bottom pb-2" data-index="${index}">
              <div class="col-auto">
+                <span class="text-muted small fw-bold">${variant.itemNumber}.</span>
+             </div>
+             <div class="col-auto">
                     <div class="form-check d-flex align-items-center justify-content-center" style="min-height: 38px;">
-                        <input type="checkbox" class="form-check-input variant-correct-checkbox mt-0"
-                               style="cursor: pointer;"
-                               title="Отметить как правильный вариант"
-                               ${isCorrect ? 'checked' : ''}>
+                        <input type="radio"
+       name="correctVariant"
+       class="form-check-input variant-correct-checkbox mt-0"
+       style="cursor: pointer;"
+       title="Отметить как правильный вариант"
+       ${isCorrect ? 'checked' : ''}>
                     </div>
                 </div>
                 <div class="col-auto">
@@ -76,10 +81,10 @@ export function renderDeleteExtraLetters(config) {
                 </div>
                 <div class="col">
                     <input type="text" maxLength="1" class="form-control form-control-sm variant-content-input"
-                           placeholder="Буква" value="${safeContent}">
+                           placeholder="текст" value="${safeContent}">
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-sm btn-icon btn-outline-danger text-center variant-delete-btn"  title="Удалить букву">
+                    <button type="button" class="btn btn-sm btn-icon btn-outline-danger text-center variant-delete-btn"  title="Удалить вариант">
                           <i class="menu-icon tf-icons ri-delete-bin-line m-0"></i>
                            </button>
                 </div>
@@ -89,35 +94,38 @@ export function renderDeleteExtraLetters(config) {
         variantsContainer.querySelectorAll('.variant-content-input').forEach(input => {
             input.addEventListener('input', function () {
                 const idx = Number(this.closest('.variant-item').dataset.index);
-                config.variants[idx].letter = this.value;
+                config.variants[idx].title = this.value;
                 updateTextareaWithoutFullRender();
             });
         });
-        variantsContainer.querySelectorAll('.variant-correct-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function () {
+        variantsContainer.querySelectorAll('.variant-correct-checkbox').forEach(radio => {
+            radio.addEventListener('change', function () {
                 const idx = Number(this.closest('.variant-item').dataset.index);
                 const variant = config.variants[idx];
 
                 if (this.checked) {
-                    if (!config.correctVariantIds.includes(variant.id)) {
-                        config.correctVariantIds.push(variant.id);
-                    }
-                } else {
-                    config.correctVariantIds = config.correctVariantIds.filter(id => id !== variant.id);
+                    config.correctVariantId = variant.id;
                 }
 
-                updateTextareaWithoutFullRender();
+                updateTextareaAndFullRender();
             });
         });
         variantsContainer.querySelectorAll('.variant-delete-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 const idx = Number(this.closest('.variant-item').dataset.index);
                 const removed = config.variants[idx];
+
                 config.variants.splice(idx, 1);
 
-                if (removed) {
-                    config.correctVariantIds = config.correctVariantIds.filter(id => id !== removed.id);
+                if (removed && config.correctVariantId === removed.id) {
+                    config.correctVariantId = null;
                 }
+
+                config.variants.forEach((v, i) => {
+                    if (v.itemNumber !== undefined) {
+                        v.itemNumber = i + 1;
+                    }
+                });
 
                 updateTextareaAndFullRender();
             });
@@ -129,7 +137,13 @@ export function renderDeleteExtraLetters(config) {
         createTextareaUpdaters(config, renderVariants);
 
     addBtn.addEventListener('click', () => {
-        config.variants.push({ id: generateId('variant'), letter: '' });
+        const nextItemNumber = config.variants.length + 1;
+
+        config.variants.push({
+            id: generateId('variant'),
+            title: '',
+            itemNumber: nextItemNumber
+        });
         updateTextareaAndFullRender();
     });
     renderVariants();

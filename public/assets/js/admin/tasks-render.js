@@ -5,9 +5,15 @@ import { renderAccentTrainer } from "./renderFunctions/renderAccentTrainer.js";
 import { renderAlphabeticSorter } from "./renderFunctions/renderAlphabeticSorter.js";
 import { renderCategoryMatcher } from "./renderFunctions/renderCategoryMatcher.js";
 import { renderColorizeWords } from "./renderFunctions/renderColorizeWords.js";
+import { renderConclusion } from "./renderFunctions/renderConclusion.js";
 import { renderDeleteExtraLetters } from "./renderFunctions/renderDeleteExtraLetters.js";
 import { renderDropWordToImage } from "./renderFunctions/renderDropWordToImage.js";
+import { renderDropWordToText } from "./renderFunctions/renderDropWordToText.js";
 import { renderFixSentence } from "./renderFunctions/renderFixSentece.js";
+import { renderMultiQuiz } from "./renderFunctions/renderMultiQuiz.js";
+import { renderReorderItems } from "./renderFunctions/renderReorderItems.js";
+import { renderSequenceBuilder } from "./renderFunctions/renderSequenceBuilder.js";
+import { renderSingleQuiz } from "./renderFunctions/renderSingleQuiz.js";
 import { renderSingleSelectImageQuiz } from "./renderFunctions/renderSingleSelectImageQuiz.js";
 import { renderWordByImage } from "./renderFunctions/renderWordByImage.js";
 import { renderWordPicker } from "./renderFunctions/renderWordPicker.js";
@@ -217,6 +223,24 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         case 'delete_extra_letter':
             renderDeleteExtraLetters(config);
+            break;
+        case 'conclusion':
+            renderConclusion(config);
+            break;
+        case 'drop_word_to_text':
+            renderDropWordToText(config);
+            break;
+        case 'multi_quiz':
+            renderMultiQuiz(config);
+            break;
+        case 'single_quiz':
+            renderSingleQuiz(config);
+            break;
+        case 'reorder_items':
+            renderReorderItems(config);
+            break;
+          case 'sequence_builder':
+            renderSequenceBuilder(config);
             break;
         default:
             renderGeneric(config);

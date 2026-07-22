@@ -1,6 +1,6 @@
 import { createTextareaUpdaters, escapeHtml, generateId } from "../helpers.js";
 
-export function renderDeleteExtraLetters(config) {
+export function renderMultiQuiz(config) {
     const editor = document.getElementById('configEditor');
 
     if (!editor) return;
@@ -59,10 +59,13 @@ export function renderDeleteExtraLetters(config) {
         }
 
         variantsContainer.innerHTML = config.variants.map((variant, index) => {
-            const safeContent = escapeHtml(variant.letter ?? '');
+            const safeContent = escapeHtml(variant.title ?? '');
             const isCorrect = config.correctVariantIds.includes(variant.id);
             return `
              <div class="variant-item row g-2 align-items-center border-bottom pb-2" data-index="${index}">
+             <div class="col-auto">
+                <span class="text-muted small fw-bold">${variant.itemNumber}.</span>
+             </div>
              <div class="col-auto">
                     <div class="form-check d-flex align-items-center justify-content-center" style="min-height: 38px;">
                         <input type="checkbox" class="form-check-input variant-correct-checkbox mt-0"
@@ -76,10 +79,10 @@ export function renderDeleteExtraLetters(config) {
                 </div>
                 <div class="col">
                     <input type="text" maxLength="1" class="form-control form-control-sm variant-content-input"
-                           placeholder="Буква" value="${safeContent}">
+                           placeholder="текст" value="${safeContent}">
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-sm btn-icon btn-outline-danger text-center variant-delete-btn"  title="Удалить букву">
+                    <button type="button" class="btn btn-sm btn-icon btn-outline-danger text-center variant-delete-btn"  title="Удалить вариант">
                           <i class="menu-icon tf-icons ri-delete-bin-line m-0"></i>
                            </button>
                 </div>
@@ -89,7 +92,7 @@ export function renderDeleteExtraLetters(config) {
         variantsContainer.querySelectorAll('.variant-content-input').forEach(input => {
             input.addEventListener('input', function () {
                 const idx = Number(this.closest('.variant-item').dataset.index);
-                config.variants[idx].letter = this.value;
+                config.variants[idx].title = this.value;
                 updateTextareaWithoutFullRender();
             });
         });
@@ -129,7 +132,13 @@ export function renderDeleteExtraLetters(config) {
         createTextareaUpdaters(config, renderVariants);
 
     addBtn.addEventListener('click', () => {
-        config.variants.push({ id: generateId('variant'), letter: '' });
+        const nextItemNumber = config.variants.length + 1;
+
+        config.variants.push({
+            id: generateId('variant'),
+            title: '',
+            itemNumber: nextItemNumber
+        });
         updateTextareaAndFullRender();
     });
     renderVariants();

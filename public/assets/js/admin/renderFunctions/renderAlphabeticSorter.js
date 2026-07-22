@@ -1,4 +1,4 @@
-import { escapeHtml, generateId, createTextareaUpdaters } from "../helpers.js";
+import { escapeHtml, generateId, createTextareaUpdaters, debounce } from "../helpers.js";
 
 export function renderAlphabeticSorter(config) {
     const editor = document.getElementById('configEditor');
@@ -67,7 +67,9 @@ export function renderAlphabeticSorter(config) {
     const variantsContainer = document.getElementById('variants-container');
     const addSlotBtn = document.getElementById('add-slot-btn');
     const addVariantBtn = document.getElementById('add-variant-btn');
-
+ const debouncedFullRender = debounce(() => {
+        updateTextareaAndFullRender();
+    }, 400);
     function variantOptionsHtml(selectedValue) {
         const options = config.variants.map(v => {
             const safeValue = escapeHtml(v.value);
@@ -182,10 +184,21 @@ export function renderAlphabeticSorter(config) {
                     }
                 });
 
-                updateTextareaAndFullRender();
+                debouncedFullRender();
             });
         });
+//  categoriesContainer.querySelectorAll('.category-label-input').forEach(input => {
+//             input.addEventListener('input', function () {
+//                 const idx = Number(this.closest('.category-item').dataset.index);
+//                 config.categories[idx].label = this.value;
 
+//                 // Синхронизируем JSON сразу, но НЕ пересобираем DOM на каждый символ —
+//                 // иначе фокус слетает с инпута. Полная перерисовка (нужна, чтобы
+//                 // обновить название категории в выпадающем списке у элементов) — с задержкой.
+//                 updateTextareaWithoutFullRender();
+//                 debouncedFullRender();
+//             });
+//         });
         variantsContainer.querySelectorAll('.variant-delete-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 const idx = Number(this.closest('.variant-item').dataset.index);
