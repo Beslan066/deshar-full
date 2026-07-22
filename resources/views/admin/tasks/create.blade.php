@@ -44,13 +44,13 @@
                         </div>
 
                         <div class="col-md-6">
-                            <div class="form-floating form-floating-outline mb-4">
-                                <select id="task_type_id" class="form-select @error('task_type_id') is-invalid @enderror" name="task_type_id" required>
-                                    <option value="">Выберите тип</option>
-                                    @foreach($taskTypes as $type)
-                                        <option value="{{ $type->id }}" {{ old('task_type_id') == $type->id ? 'selected' : '' }}>
-                                            {{ $type->name }}
-                                        </option>
+                           <div class="form-floating form-floating-outline mb-4">
+                            <select id="task_type_id" class="form-select @error('task_type_id') is-invalid @enderror" name="task_type_id" required>
+                              <option value="">Выберите тип</option>
+                                 @foreach($taskTypes as $type)
+                                    <option value="{{ $type->id }}" data-slug="{{ $type->slug }}" {{ old('task_type_id') == $type->id ? 'selected' : '' }}>
+                                        {{ $type->name }}
+                                    </option>
                                     @endforeach
                                 </select>
                                 <label for="task_type_id">Тип задания <span class="text-danger">*</span></label>
@@ -441,6 +441,6 @@
     </style>
 
     @push('scripts')
-        <script src="{{asset('assets/js/admin/tasks-render.js')}}"></script>
+        <script type="module" src="{{asset('assets/js/admin/tasks-render.js')}}"></script>
     @endpush
 @endsection

@@ -129,6 +129,9 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'auth
         Route::get('/', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'index'])->name('admin.tasks.index');
         Route::get('/create', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'create'])->name('admin.tasks.create');
         Route::post('/store', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'store'])->name('admin.tasks.store');
+
+        Route::post('/upload-config-image', [\App\Http\Controllers\Admin\Tasks\IndexController::class,'uploadConfigImage'])->name('tasks.upload-image');
+
         Route::get('/{task}/edit', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'edit'])->name('admin.tasks.edit');
         Route::patch('/{task}', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'update'])->name('admin.tasks.update');
         Route::delete('/{task}', [\App\Http\Controllers\Admin\Tasks\IndexController::class, 'destroy'])->name('admin.tasks.delete');
