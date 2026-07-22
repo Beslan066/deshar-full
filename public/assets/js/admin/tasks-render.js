@@ -5,6 +5,7 @@ import { renderAccentTrainer } from "./renderFunctions/renderAccentTrainer.js";
 import { renderAlphabeticSorter } from "./renderFunctions/renderAlphabeticSorter.js";
 import { renderCategoryMatcher } from "./renderFunctions/renderCategoryMatcher.js";
 import { renderColorizeWords } from "./renderFunctions/renderColorizeWords.js";
+import { renderDeleteExtraLetters } from "./renderFunctions/renderDeleteExtraLetters.js";
 import { renderDropWordToImage } from "./renderFunctions/renderDropWordToImage.js";
 import { renderFixSentence } from "./renderFunctions/renderFixSentece.js";
 import { renderSingleSelectImageQuiz } from "./renderFunctions/renderSingleSelectImageQuiz.js";
@@ -213,6 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         case 'word_picker':
             renderWordPicker(config);
+            break;
+        case 'delete_extra_letter':
+            renderDeleteExtraLetters(config);
             break;
         default:
             renderGeneric(config);
