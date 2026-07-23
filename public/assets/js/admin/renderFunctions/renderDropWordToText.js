@@ -1,6 +1,6 @@
-import { escapeHtml, bindImageUpload, generateId, debounce, createTextareaUpdaters } from "../helpers.js";
+import { createTextareaUpdaters, debounce, escapeHtml, generateId } from "../helpers.js";
 
-export function renderDropWordToImage(config) {
+export function renderDropWordToText(config) {
     const editor = document.getElementById('configEditor');
     if (!editor) return;
 
@@ -34,7 +34,7 @@ export function renderDropWordToImage(config) {
 
             <div class="card border shadow-none">
                 <div class="card-header d-flex justify-content-between align-items-center bg-light p-2 border-bottom">
-                    <span class="fw-semibold small text-uppercase">Элементы (картинка → правильный вариант)</span>
+                    <span class="fw-semibold small text-uppercase">Элементы (текст → правильный вариант)</span>
                     <button type="button" id="add-item-btn" class="btn btn-xs btn-primary py-1 px-2">
                         <i class="bx bx-plus me-1"></i> Добавить элемент
                     </button>
@@ -50,14 +50,13 @@ export function renderDropWordToImage(config) {
     const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
         createTextareaUpdaters(config, renderAll);
 
-
     const debouncedSync = debounce(() => {
         updateTextareaWithoutFullRender();
     }, 400);
 
     function renderAll() {
-        renderVariants();
         renderItems();
+        renderVariants();
     }
 
     function renderVariants() {
@@ -85,15 +84,19 @@ export function renderDropWordToImage(config) {
                 </button>
             </div>
         `).join('');
-
+        const processInputDebounced = debounce((variantId, newValue) => {
+            updateItemOptionsLabel(variantId, newValue);
+            updateTextareaWithoutFullRender();
+        }, 400);
         container.querySelectorAll('.variant-value-input').forEach((input, i) => {
             input.addEventListener('input', (e) => {
                 const variant = config.variants[i];
-                variant.value = e.target.value;
-                updateItemOptionsLabel(variant.id, variant.value);
-                debouncedSync();
+                const newValue = e.target.value;
+                variant.value = newValue;
+                processInputDebounced(variant.id, newValue);
             });
         });
+
 
         container.querySelectorAll('.remove-variant-btn').forEach((btn, i) => {
             btn.addEventListener('click', () => {
@@ -116,8 +119,7 @@ export function renderDropWordToImage(config) {
         }
 
         container.innerHTML = config.items.map((item, index) => {
-            const hasImage = item.imageUrl && item.imageUrl.trim() !== '';
-            const safeUrl = escapeHtml(item.imageUrl || '');
+            const safeContent = escapeHtml(item.content || '');
 
             return `
             <div class="item-row row g-2 align-items-center border-bottom pb-3" data-index="${index}">
@@ -125,32 +127,14 @@ export function renderDropWordToImage(config) {
     id: ${item.id}
 </span>
 
-                <!-- Инпут для ссылки на картинку -->
+                <!-- Текст элемента -->
                 <div class="col">
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-link"></i></span>
-                        <input type="text" class="form-control form-control-sm item-image-input"
-                               placeholder="Вставьте путь к изображению или загрузите файл"
-                               value="${safeUrl}">
+                        <input type="text" class="form-control form-control-sm item-content-input"
+                               placeholder="text"
+                               value="${safeContent}">
                     </div>
-                </div>
-
-                <!-- Превью -->
-                <div class="col-auto" style="width: 50px;">
-                    <div class="border rounded text-center bg-light item-preview" style="height: 38px; width: 45px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        ${hasImage
-                    ? `<img src="${safeUrl}" style="max-width:100%; max-height:100%; object-fit: cover;">`
-                    : `<i class="bx bx-image text-muted font-size-18"></i>`
-                }
-                    </div>
-                </div>
-
-                <!-- Загрузка файла -->
-                <div class="col-auto">
-                    <label class="btn btn-sm btn-outline-secondary btn-icon mb-0 item-upload-btn text-center" title="Загрузить изображение">
-                        <i class="menu-icon tf-icons ri-upload-line m-0"></i>
-                        <input type="file" class="d-none item-file-input" accept="image/*">
-                    </label>
                 </div>
 
                 <!-- Выбор правильного варианта -->
@@ -175,11 +159,10 @@ export function renderDropWordToImage(config) {
             `;
         }).join('');
 
-        container.querySelectorAll('.item-image-input').forEach((input, i) => {
+        container.querySelectorAll('.item-content-input').forEach((input, i) => {
             input.addEventListener('input', (e) => {
-                config.items[i].imageUrl = e.target.value.trim();
+                config.items[i].content = e.target.value.trim();
                 updateTextareaWithoutFullRender();
-                updateItemPreview(i);
             });
         });
 
@@ -196,34 +179,13 @@ export function renderDropWordToImage(config) {
                 updateTextareaAndFullRender();
             });
         });
-
-        container.querySelectorAll('.item-row').forEach((row) => {
-            const index = Number(row.dataset.index);
-            const fileInput = row.querySelector('.item-file-input');
-            const uploadBtn = row.querySelector('.item-upload-btn');
-
-            bindImageUpload(fileInput, uploadBtn, (url) => {
-                config.items[index].imageUrl = url;
-                updateTextareaAndFullRender();
-            });
-        });
     }
 
     function updateItemOptionsLabel(variantId, text) {
         document.querySelectorAll('.item-variant-select').forEach((select) => {
-            const option = Array.from(select.options).find(o => o.value === variantId);
+            const option = Array.from(select.options).find(o => String(o.value) === String(variantId));
             if (option) option.textContent = text;
         });
-    }
-
-    function updateItemPreview(index) {
-        const row = document.querySelector(`.item-row[data-index="${index}"]`);
-        if (!row) return;
-        const preview = row.querySelector('.item-preview');
-        const url = config.items[index].imageUrl;
-        preview.innerHTML = url
-            ? `<img src="${escapeHtml(url)}" style="max-width:100%; max-height:100%; object-fit: cover;">`
-            : `<i class="bx bx-image text-muted font-size-18"></i>`;
     }
 
     document.getElementById('add-variant-btn').addEventListener('click', () => {
@@ -232,7 +194,7 @@ export function renderDropWordToImage(config) {
     });
 
     document.getElementById('add-item-btn').addEventListener('click', () => {
-        config.items.push({ id: generateId("item"), imageUrl: '', correctVariantId: null });
+        config.items.push({ id: generateId("item"), content: '', correctVariantId: null });
         updateTextareaAndFullRender();
     });
 

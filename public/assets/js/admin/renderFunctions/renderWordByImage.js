@@ -38,9 +38,9 @@ export function renderWordByImage(config) {
                                 <div class="border rounded text-center bg-light" id="main-image-preview"
                                      style="height: 70px; width: 70px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     ${config.imageUrl
-                                        ? `<img src="${escapeHtml(config.imageUrl)}" style="max-width:100%; max-height:100%; object-fit: cover;">`
-                                        : `<i class="bx bx-image text-muted font-size-24"></i>`
-                                    }
+            ? `<img src="${escapeHtml(config.imageUrl)}" style="max-width:100%; max-height:100%; object-fit: cover;">`
+            : `<i class="bx bx-image text-muted font-size-24"></i>`
+        }
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="input-group input-group-merge input-group-sm mb-2">
@@ -94,17 +94,17 @@ export function renderWordByImage(config) {
     editor.innerHTML = html;
 
     function renderMainImagePreview() {
-    const preview = document.getElementById('main-image-preview');
-    if (!preview) return;
-    preview.innerHTML = config.imageUrl
-        ? `<img src="${escapeHtml(config.imageUrl)}" style="max-width:100%; max-height:100%; object-fit: cover;">`
-        : `<i class="bx bx-image text-muted font-size-24"></i>`;
+        const preview = document.getElementById('main-image-preview');
+        if (!preview) return;
+        preview.innerHTML = config.imageUrl
+            ? `<img src="${escapeHtml(config.imageUrl)}" style="max-width:100%; max-height:100%; object-fit: cover;">`
+            : `<i class="bx bx-image text-muted font-size-24"></i>`;
 
-    const urlInput = document.getElementById('main-image-url-input');
-    if (urlInput && urlInput.value !== config.imageUrl) {
-        urlInput.value = config.imageUrl;
+        const urlInput = document.getElementById('main-image-url-input');
+        if (urlInput && urlInput.value !== config.imageUrl) {
+            urlInput.value = config.imageUrl;
+        }
     }
-}
 
     const mainUrlInput = document.getElementById('main-image-url-input');
     if (mainUrlInput) {
@@ -123,13 +123,13 @@ export function renderWordByImage(config) {
             updateTextareaAndFullRender();
         });
     }
-const shuffleLettersBtn = document.getElementById('shuffle-letters-btn');
-if (shuffleLettersBtn) {
-    shuffleLettersBtn.addEventListener('click', function () {
-        config.availableLetters = shuffle(config.availableLetters);
-        updateTextareaAndFullRender();
-    });
-}
+    const shuffleLettersBtn = document.getElementById('shuffle-letters-btn');
+    if (shuffleLettersBtn) {
+        shuffleLettersBtn.addEventListener('click', function () {
+            config.availableLetters = shuffle(config.availableLetters);
+            updateTextareaAndFullRender();
+        });
+    }
 
     const correctAnswerInput = document.getElementById('correct-answer-input');
     if (correctAnswerInput) {

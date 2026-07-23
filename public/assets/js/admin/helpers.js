@@ -60,3 +60,66 @@ export function shuffle(array) {
 
     return result;
 }
+
+
+export function createTextareaUpdaters(config, renderFn) {
+    const textarea = document.getElementById('configJsonTextarea');
+
+    function syncTextarea() {
+        if (textarea) {
+            textarea.value = JSON.stringify(config, null, 2);
+        }
+    }
+
+    function notifyPreview() {
+        if (typeof window.updateJsonPreview === 'function') {
+            window.updateJsonPreview();
+        }
+    }
+
+    function updateTextareaAndFullRender() {
+        syncTextarea();
+        if (typeof renderFn === 'function') {
+            renderFn();
+        }
+        notifyPreview();
+    }
+
+    function updateTextareaWithoutFullRender() {
+        syncTextarea();
+        notifyPreview();
+    }
+
+    // ------------------------------------------------------------
+    // Обратная синхронизация: JSON -> поля
+    // ------------------------------------------------------------
+    if (textarea) {
+        textarea.addEventListener('input', () => {
+            let parsed;
+            try {
+                parsed = JSON.parse(textarea.value);
+            } catch (err) {
+                return;
+            }
+
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                return;
+            }
+            Object.keys(config).forEach(key => delete config[key]);
+            Object.assign(config, parsed);
+            if (typeof renderFn === 'function') {
+                renderFn();
+            }
+            notifyPreview();
+        });
+    }
+
+    return { updateTextareaAndFullRender, updateTextareaWithoutFullRender };
+}
+export function debounce(fn, delay = 400) {
+    let timer = null;
+    return function debounced(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
