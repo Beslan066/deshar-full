@@ -21,14 +21,14 @@ class TaskTypesSeeder extends Seeder
                 'description' => 'Выбрать вариант слова с правильным ударением',
                 'default_config' => [
                     'variants' => [
-                        ['id' => '1', 'letter' => 'М'],
-                        ['id' => '2', 'letter' => 'О'],
-                        ['id' => '3', 'letter' => 'Л'],
-                        ['id' => '4', 'letter' => 'О'],
-                        ['id' => '5', 'letter' => 'К'],
-                        ['id' => '6', 'letter' => 'О'],
+                        ['id' => 'variant-1', 'letter' => 'М'],
+                        ['id' => 'variant-2', 'letter' => 'О'],
+                        ['id' => 'variant-3', 'letter' => 'Л'],
+                        ['id' => 'variant-4', 'letter' => 'О'],
+                        ['id' => 'variant-5', 'letter' => 'К'],
+                        ['id' => 'variant-6', 'letter' => 'О'],
                     ],
-                    'correct_variant_ids' => ['2'],
+                    'correct_variant_ids' => ['variant-2'],
                 ],
                 'is_active' => true,
                 'sort_order' => 14,
@@ -40,10 +40,10 @@ class TaskTypesSeeder extends Seeder
                 'description' => 'Выбрать одну правильную картинку из предложенных',
                 'default_config' => [
                     'variants' => [
-                        ['id' => '1', 'imageUrl' => '/images/quiz/apple.png'],
-                        ['id' => '2', 'imageUrl' => '/images/quiz/banana.png'],
+                        ['id' => 'variant-1', 'imageUrl' => '/images/quiz/apple.png'],
+                        ['id' => 'variant-2', 'imageUrl' => '/images/quiz/banana.png'],
                     ],
-                    'correct_variant_id' => '1',
+                    'correct_variant_id' => 'variant-1',
                     'shuffle_variants' => true,
                 ],
                 'is_active' => true,
@@ -222,11 +222,11 @@ class TaskTypesSeeder extends Seeder
                 'description' => 'Выбрать один или несколько правильных вариантов ответа',
                 'default_config' => [
                     'variants' => [
-                        ['id' => '1', 'itemNumber' => '1', 'title' => 'Огурец'],
-                        ['id' => '2', 'itemNumber' => '2', 'title' => 'Яблоко'],
-                        ['id' => '3', 'itemNumber' => '3', 'title' => 'Помидор'],
+                        ['id' => 'variant-1', 'itemNumber' => '1', 'title' => 'Огурец'],
+                        ['id' => 'variant-2', 'itemNumber' => '2', 'title' => 'Яблоко'],
+                        ['id' => 'variant-3', 'itemNumber' => '3', 'title' => 'Помидор'],
                     ],
-                    'correctVariantIds' => ['1', '3'],
+                    'correctVariantIds' => ['variant-1', 'variant-3'],
                 ],
                 'is_active' => true,
                 'sort_order' => 24,
@@ -256,10 +256,10 @@ class TaskTypesSeeder extends Seeder
                 'description' => 'Классический текстовый вопрос с выбором одного верного ответа',
                 'default_config' => [
                     'variants' => [
-                        ['id' => '1', 'itemNumber' => '1', 'title' => 'Земля круглая?'],
-                        ['id' => '2', 'itemNumber' => '2', 'title' => 'Земля плоская?'],
+                        ['id' => 'variant-1', 'itemNumber' => '1', 'title' => 'Земля круглая?'],
+                        ['id' => 'variant-2', 'itemNumber' => '2', 'title' => 'Земля плоская?'],
                     ],
-                    'correctVariantId' => '1',
+                    'correctVariantId' => 'variant-1',
                 ],
                 'is_active' => true,
                 'sort_order' => 27,
@@ -332,8 +332,25 @@ class TaskTypesSeeder extends Seeder
 
         ];
 
+
+//  foreach ($types as $type) {
+//             TaskType::updateOrCreate(
+//                 ['slug' => $type['slug']],
+//                 [
+//                     'name' => $type['name'],
+//                     'icon' => $type['icon'],
+//                     'description' => $type['description'],
+//                     'default_config' => $type['default_config'],
+//                     'is_active' => $type['is_active'],
+//                     'sort_order' => $type['sort_order'],
+//                 ]
+//             );
+//         }
+
         foreach ($types as $type) {
             TaskType::create($type);
         }
+
+
     }
 }

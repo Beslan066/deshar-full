@@ -78,7 +78,7 @@ export function renderMultiQuiz(config) {
                     <span class="badge bg-secondary">${escapeHtml(String(variant.id))}</span>
                 </div>
                 <div class="col">
-                    <input type="text" maxLength="1" class="form-control form-control-sm variant-content-input"
+                    <input type="text" class="form-control form-control-sm variant-content-input"
                            placeholder="текст" value="${safeContent}">
                 </div>
                 <div class="col-auto">
