@@ -81,20 +81,32 @@ class UserModuleProgress extends Model
         return $this->module?->pieces()->count() ?? 0;
     }
 
+    // public function getCompletedPiecesAttribute(): int
+    // {
+    //     if (!$this->module) {
+    //         return 0;
+    //     }
+
+    //     return $this->module->pieces()
+    //         ->whereHas('userProgress', function ($query) {
+    //             $query->where('user_id', $this->user_id)
+    //                 ->where('status', UserPieceProgress::STATUS_COMPLETED);
+    //         })
+    //         ->count();
+    // }
     public function getCompletedPiecesAttribute(): int
     {
         if (!$this->module) {
             return 0;
         }
+        $pieceIds = $this->module->pieces()->pluck('id')->toArray();
+        if (empty($pieceIds)) {
+            return 0;
+        }
 
-        return $this->module->pieces()
-            ->whereHas('userProgress', function ($query) {
-                $query->where('user_id', $this->user_id)
-                    ->where('status', UserPieceProgress::STATUS_COMPLETED);
-            })
-            ->count();
+        return UserPieceProgress::where('user_id', $this->user_id)->whereIn('piece_id', $pieceIds)
+            ->where('status', UserPieceProgress::STATUS_COMPLETED)->count();
     }
-
     // 🔧 Методы
     /**
      * Обновить прогресс модуля
