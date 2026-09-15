@@ -935,10 +935,9 @@ class Task extends Model
         $expectedSlots = collect($data)
             ->pluck('slots')
             ->collapse()
-            ->associateBy(
-                fn($slot) => isset($slot['id']) ? (string) $slot['id'] : '',
-                fn($slot) => trim((string) ($slot['correct'] ?? ''))
-            )
+            ->mapWithKeys(fn($slot) => [
+                (isset($slot['id']) ? (string) $slot['id'] : '') => trim((string) ($slot['correct'] ?? '')),
+            ])
             ->filter(fn($val, $key) => $key !== '')
             ->toArray();
 
