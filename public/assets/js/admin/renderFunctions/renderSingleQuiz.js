@@ -1,7 +1,7 @@
 import { createTextareaUpdaters, escapeHtml, generateId } from "../helpers.js";
 
 export function renderSingleQuiz(config) {
-    const editor = document.getElementById('configEditor');
+    const editor = document.getElementById("configEditor");
 
     if (!editor) return;
 
@@ -43,10 +43,8 @@ export function renderSingleQuiz(config) {
 
     editor.innerHTML = html;
 
-
-
-    const variantsContainer = document.getElementById('variants-container');
-    const addBtn = document.getElementById('add-variant-btn');
+    const variantsContainer = document.getElementById("variants-container");
+    const addBtn = document.getElementById("add-variant-btn");
     function renderVariants() {
         if (!variantsContainer) return;
         if (config.variants.length === 0) {
@@ -58,10 +56,11 @@ export function renderSingleQuiz(config) {
             return;
         }
 
-        variantsContainer.innerHTML = config.variants.map((variant, index) => {
-            const safeContent = escapeHtml(variant.title ?? '');
-            const isCorrect = config.correctVariantId === variant.id;
-            return `
+        variantsContainer.innerHTML = config.variants
+            .map((variant, index) => {
+                const safeContent = escapeHtml(variant.title ?? "");
+                const isCorrect = config.correctVariantId === variant.id;
+                return `
              <div class="variant-item row g-2 align-items-center border-bottom pb-2" data-index="${index}">
              <div class="col-auto">
                 <span class="text-muted small fw-bold">${variant.itemNumber}.</span>
@@ -73,7 +72,7 @@ export function renderSingleQuiz(config) {
        class="form-check-input variant-correct-checkbox mt-0"
        style="cursor: pointer;"
        title="Отметить как правильный вариант"
-       ${isCorrect ? 'checked' : ''}>
+       ${isCorrect ? "checked" : ""}>
                     </div>
                 </div>
                 <div class="col-auto">
@@ -89,64 +88,74 @@ export function renderSingleQuiz(config) {
                            </button>
                 </div>
               </div>
-            `
-        }).join('');
-        variantsContainer.querySelectorAll('.variant-content-input').forEach(input => {
-            input.addEventListener('input', function () {
-                const idx = Number(this.closest('.variant-item').dataset.index);
-                config.variants[idx].title = this.value;
-                updateTextareaWithoutFullRender();
-            });
-        });
-        variantsContainer.querySelectorAll('.variant-correct-checkbox').forEach(radio => {
-            radio.addEventListener('change', function () {
-                const idx = Number(this.closest('.variant-item').dataset.index);
-                const variant = config.variants[idx];
-
-                if (this.checked) {
-                    config.correctVariantId = variant.id;
-                }
-
-                updateTextareaAndFullRender();
-            });
-        });
-        variantsContainer.querySelectorAll('.variant-delete-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const idx = Number(this.closest('.variant-item').dataset.index);
-                const removed = config.variants[idx];
-
-                config.variants.splice(idx, 1);
-
-                if (removed && config.correctVariantId === removed.id) {
-                    config.correctVariantId = null;
-                }
-
-                config.variants.forEach((v, i) => {
-                    if (v.itemNumber !== undefined) {
-                        v.itemNumber = i + 1;
-                    }
+            `;
+            })
+            .join("");
+        variantsContainer
+            .querySelectorAll(".variant-content-input")
+            .forEach((input) => {
+                input.addEventListener("input", function () {
+                    const idx = Number(
+                        this.closest(".variant-item").dataset.index,
+                    );
+                    config.variants[idx].title = this.value;
+                    updateTextareaWithoutFullRender();
                 });
-
-                updateTextareaAndFullRender();
             });
-        });
-    }
+        variantsContainer
+            .querySelectorAll(".variant-correct-checkbox")
+            .forEach((radio) => {
+                radio.addEventListener("change", function () {
+                    const idx = Number(
+                        this.closest(".variant-item").dataset.index,
+                    );
+                    const variant = config.variants[idx];
 
+                    if (this.checked) {
+                        config.correctVariantId = variant.id;
+                    }
+
+                    updateTextareaAndFullRender();
+                });
+            });
+        variantsContainer
+            .querySelectorAll(".variant-delete-btn")
+            .forEach((btn) => {
+                btn.addEventListener("click", function () {
+                    const idx = Number(
+                        this.closest(".variant-item").dataset.index,
+                    );
+                    const removed = config.variants[idx];
+
+                    config.variants.splice(idx, 1);
+
+                    if (removed && config.correctVariantId === removed.id) {
+                        config.correctVariantId = null;
+                    }
+
+                    config.variants.forEach((v, i) => {
+                        if (v.itemNumber !== undefined) {
+                            v.itemNumber = i + 1;
+                        }
+                    });
+
+                    updateTextareaAndFullRender();
+                });
+            });
+    }
 
     const { updateTextareaAndFullRender, updateTextareaWithoutFullRender } =
         createTextareaUpdaters(config, renderVariants);
 
-    addBtn.addEventListener('click', () => {
+    addBtn.addEventListener("click", () => {
         const nextItemNumber = config.variants.length + 1;
 
         config.variants.push({
-            id: generateId('variant'),
-            title: '',
-            itemNumber: nextItemNumber
+            id: generateId("variant"),
+            title: "",
+            itemNumber: String(nextItemNumber),
         });
         updateTextareaAndFullRender();
     });
     renderVariants();
-
 }
-
