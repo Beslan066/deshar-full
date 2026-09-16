@@ -50,7 +50,7 @@ export function bindImageUpload(inputEl, buttonEl, onSuccess) {
 const counters = new Map();
 
 export function generateId(prefix = "") {
-    const key = prefix || "__default__";
+    const key = prefix || "_default_";
     const next = (counters.get(key) || 0) + 1;
     counters.set(key, next);
     return prefix ? `${prefix}-${next}` : `${next}`;

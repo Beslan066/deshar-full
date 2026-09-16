@@ -332,25 +332,8 @@ class TaskTypesSeeder extends Seeder
 
         ];
 
-
-//  foreach ($types as $type) {
-//             TaskType::updateOrCreate(
-//                 ['slug' => $type['slug']],
-//                 [
-//                     'name' => $type['name'],
-//                     'icon' => $type['icon'],
-//                     'description' => $type['description'],
-//                     'default_config' => $type['default_config'],
-//                     'is_active' => $type['is_active'],
-//                     'sort_order' => $type['sort_order'],
-//                 ]
-//             );
-//         }
-
         foreach ($types as $type) {
             TaskType::create($type);
         }
-
-
     }
 }
