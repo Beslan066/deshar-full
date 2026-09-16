@@ -140,7 +140,7 @@
 
                         {{-- КНОПКИ --}}
                         <div class="col-12">
-                            <a href="{{ route('admin.pieces.index') }}" class="btn btn-outline-secondary waves-effect">Отмена</a>
+                            <a href="{{ route('admin.educationModulesPieces.index') }}" class="btn btn-outline-secondary waves-effect">Отмена</a>
                             <button type="submit" class="btn btn-primary waves-effect waves-light">Обновить раздел</button>
                         </div>
                     </div>
