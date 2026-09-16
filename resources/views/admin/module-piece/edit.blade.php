@@ -96,7 +96,7 @@
                         <div class="col-12">
                             <div class="form-floating form-floating-outline mb-4">
                             <textarea id="description" class="form-control @error('description') is-invalid @enderror"
-                                      placeholder="Описание раздела" name="description" rows="3">{{ $educationModulePiece->description }}</textarea>
+                                      placeholder="Описание раздела" name="description" rows="3">{{ old('description', $educationModulePiece->description) }}</textarea>
                                 <label for="description">Описание</label>
                                 @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>

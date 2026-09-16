@@ -33,7 +33,7 @@ class EducationModulePiece extends Model
     ];
 
     // ============================================================
-    // 🔗 СВЯЗИ (Relationships)
+    //  СВЯЗИ (Relationships)
     // ============================================================
 
     /**
@@ -78,7 +78,7 @@ class EducationModulePiece extends Model
     }
 
     // ============================================================
-    // 📊 СКОУПЫ (Scopes)
+    //  СКОУПЫ (Scopes)
     // ============================================================
 
     public function scopePublished($query)
@@ -102,7 +102,7 @@ class EducationModulePiece extends Model
     }
 
     // ============================================================
-    // 🎯 АКСЕССОРЫ (Accessors)
+    //  АКСЕССОРЫ (Accessors)
     // ============================================================
 
     public function getTotalLessonsAttribute(): int
@@ -164,7 +164,7 @@ class EducationModulePiece extends Model
     }
 
     // ============================================================
-    // 🔧 МЕТОДЫ
+    //  МЕТОДЫ
     // ============================================================
 
     /**
@@ -233,7 +233,7 @@ class EducationModulePiece extends Model
     }
 
     // ============================================================
-    // 🔄 BOOT / EVENTS
+    //  BOOT / EVENTS
     // ============================================================
 
     protected static function boot()
