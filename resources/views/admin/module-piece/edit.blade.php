@@ -20,7 +20,7 @@
                     </div>
                 @endif
 
-                <form class="card-body" action="{{ route('admin.educationModulesPieces.update', $piece) }}" method="POST" enctype="multipart/form-data">
+                <form class="card-body" action="{{ route('admin.educationModulesPieces.update', $piece->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
 
