@@ -20,7 +20,7 @@
                     </div>
                 @endif
 
-                <form class="card-body" action="{{ route('admin.educationModulesPieces.update', $piece->id) }}" method="POST" enctype="multipart/form-data">
+                <form class="card-body" action="{{ route('admin.educationModulesPieces.update', $educationModulePiece) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
 
@@ -29,7 +29,7 @@
                         <div class="col-md-6">
                             <div class="form-floating form-floating-outline mb-4">
                                 <input type="text" id="name" class="form-control @error('name') is-invalid @enderror"
-                                       placeholder="Например: Алфавит" name="name" value="{{ old('name', $piece->name) }}" required>
+                                       placeholder="Например: Алфавит" name="name" value="{{ old('name', $educationModulePiece->name) }}" required>
                                 <label for="name">Название раздела <span class="text-danger">*</span></label>
                                 @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -43,7 +43,7 @@
                                 <select id="education_module_id" class="form-select @error('education_module_id') is-invalid @enderror" name="education_module_id" required>
                                     <option value="">Выберите модуль</option>
                                     @foreach($modules as $module)
-                                        <option value="{{ $module->id }}" {{ old('education_module_id', $piece->education_module_id) == $module->id ? 'selected' : '' }}>
+                                        <option value="{{ $module->id }}" {{ old('education_module_id', $educationModulePiece->education_module_id) == $module->id ? 'selected' : '' }}>
                                             {{ $module->name }}
                                         </option>
                                     @endforeach
@@ -59,7 +59,7 @@
                         <div class="col-md-4">
                             <div class="form-floating form-floating-outline mb-4">
                                 <input type="number" id="sort_order" class="form-control @error('sort_order') is-invalid @enderror"
-                                       placeholder="0" name="sort_order" value="{{ old('sort_order', $piece->sort_order ?? 0) }}" min="0">
+                                       placeholder="0" name="sort_order" value="{{ old('sort_order', $educationModulePiece->sort_order ?? 0) }}" min="0">
                                 <label for="sort_order">Порядок сортировки</label>
                                 @error('sort_order')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -72,7 +72,7 @@
                         <div class="col-md-4">
                             <div class="form-floating form-floating-outline mb-4">
                                 <input type="number" id="xp_reward" class="form-control @error('xp_reward') is-invalid @enderror"
-                                       placeholder="10" name="xp_reward" value="{{ old('xp_reward', $piece->xp_reward ?? 10) }}" min="0">
+                                       placeholder="10" name="xp_reward" value="{{ old('xp_reward', $educationModulePiece->xp_reward ?? 10) }}" min="0">
                                 <label for="xp_reward">XP награда</label>
                                 @error('xp_reward')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -84,7 +84,7 @@
                         <div class="col-md-4">
                             <div class="form-floating form-floating-outline mb-4">
                                 <input type="number" id="estimated_time" class="form-control @error('estimated_time') is-invalid @enderror"
-                                       placeholder="30" name="estimated_time" value="{{ old('estimated_time', $piece->estimated_time ?? 30) }}" min="1">
+                                       placeholder="30" name="estimated_time" value="{{ old('estimated_time', $educationModulePiece->estimated_time ?? 30) }}" min="1">
                                 <label for="estimated_time">Время (минут)</label>
                                 @error('estimated_time')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -96,7 +96,7 @@
                         <div class="col-12">
                             <div class="form-floating form-floating-outline mb-4">
                             <textarea id="description" class="form-control @error('description') is-invalid @enderror"
-                                      placeholder="Описание раздела" name="description" rows="3">{{ old('description', $piece->description) }}</textarea>
+                                      placeholder="Описание раздела" name="description" rows="3">{{ old('description', $educationModulePiece->description) }}</textarea>
                                 <label for="description">Описание</label>
                                 @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -108,9 +108,9 @@
                         <div class="col-md-6">
                             <div class="mb-4">
                                 <label for="fon" class="form-label">Фоновое изображение</label>
-                                @if($piece->fon)
+                                @if($educationModulePiece->fon)
                                     <div class="mb-2">
-                                        <img src="{{ $piece->fon }}" alt="Текущее изображение" width="100" class="img-thumbnail" style="object-fit: cover;">
+                                        <img src="{{ $educationModulePiece->fon }}" alt="Текущее изображение" width="100" class="img-thumbnail" style="object-fit: cover;">
                                         <br>
                                         <small class="text-muted">Текущее изображение</small>
                                     </div>
@@ -128,12 +128,12 @@
                         <div class="col-md-6">
                             <div class="form-check form-switch mb-4 mt-2">
                                 <input class="form-check-input" type="checkbox" id="is_published"
-                                       name="is_published" {{ old('is_published', $piece->is_published) ? 'checked' : '' }}>
+                                       name="is_published" {{ old('is_published', $educationModulePiece->is_published) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_published">Опубликовать</label>
                             </div>
                             <div class="form-check form-switch mb-4">
                                 <input class="form-check-input" type="checkbox" id="is_required"
-                                       name="is_required" {{ old('is_required', $piece->is_required) ? 'checked' : '' }}>
+                                       name="is_required" {{ old('is_required', $educationModulePiece->is_required) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_required">Обязательный для прохождения</label>
                             </div>
                         </div>

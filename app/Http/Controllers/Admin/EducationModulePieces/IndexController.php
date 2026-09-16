@@ -78,16 +78,16 @@ class IndexController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(EducationModulePiece $piece)
+    public function edit(EducationModulePiece $educationModulePiece)
     {
         $modules = EducationModule::where('is_published', true)->get();
-        return view('admin.module-piece.edit', compact('piece', 'modules'));
+        return view('admin.module-piece.edit', compact('educationModulePiece', 'modules'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, EducationModulePiece $piece)
+    public function update(Request $request, EducationModulePiece $educationModulePiece)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -105,36 +105,36 @@ class IndexController extends Controller
         $data['slug'] = Str::slug($request->name);
 
         if ($request->hasFile('fon')) {
-            if ($piece->fon && file_exists(public_path($piece->fon))) {
-                unlink(public_path($piece->fon));
+            if ($educationModulePiece->fon && file_exists(public_path($educationModulePiece->fon))) {
+                unlink(public_path($educationModulePiece->fon));
             }
             $path = $request->file('fon')->store('pieces', 'public');
             $data['fon'] = '/storage/' . $path;
         }
 
-        // ✅ ВАЖНО: Явно приводим к boolean
+        // Явно приводим к boolean
         $data['is_published'] = $request->has('is_published') ? true : false;
         $data['is_required'] = $request->has('is_required') ? true : false;
 
-        $piece->update($data);
+        $educationModulePiece->update($data);
 
         return redirect()
             ->route('admin.educationModulesPieces.index')
-            ->with('success', 'Раздел "' . $piece->name . '" успешно обновлен!');
+            ->with('success', 'Раздел "' . $educationModulePiece->name . '" успешно обновлен!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(EducationModulePiece $piece)
+    public function destroy(EducationModulePiece $educationModulePiece)
     {
-        $name = $piece->name;
+        $name = $educationModulePiece->name;
 
-        if ($piece->fon && file_exists(public_path($piece->fon))) {
-            unlink(public_path($piece->fon));
+        if ($educationModulePiece->fon && file_exists(public_path($educationModulePiece->fon))) {
+            unlink(public_path($educationModulePiece->fon));
         }
 
-        $piece->delete();
+        $educationModulePiece->delete();
 
         return redirect()
             ->route('admin.educationModulesPieces.index')
